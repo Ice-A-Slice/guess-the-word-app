@@ -5,3 +5,5 @@
 
 // Export future contexts here
 // Example: export { GameContext, GameProvider } from './GameContext'; 
+
+export * from './GameContext'; 
