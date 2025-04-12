@@ -18,30 +18,30 @@ export const DefinitionDisplay: React.FC<DefinitionDisplayProps> = ({
 
   return (
     <section 
-      className="mb-8 text-center" 
+      className="w-full mb-10 text-center" 
       data-testid="definition-display"
       aria-labelledby="definition-heading"
     >
       <h2 
-        className="text-xl font-semibold mb-2" 
+        className="text-2xl font-semibold mb-4" 
         id="definition-heading"
       >
         Definition:
       </h2>
       <div
-        className="text-gray-700 text-lg"
+        className="text-gray-700 text-xl mb-4 max-w-3xl mx-auto"
         role="region"
         aria-live="polite"
       >
         {definition}
       </div>
       <div 
-        className="mt-2 text-sm text-gray-500"
+        className="mt-2 text-md text-gray-500"
         aria-live="polite"
       >
         <span id="difficulty-label">Difficulty:</span>
         <span 
-          className={`ml-1 font-medium ${difficultyColor}`}
+          className={`ml-2 font-medium ${difficultyColor}`}
           aria-labelledby="difficulty-label"
         >
           {difficultyText}

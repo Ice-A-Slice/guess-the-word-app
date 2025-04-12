@@ -10,6 +10,7 @@ export const WordSelectionDemo: React.FC = () => {
   const [guess, setGuess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; type: MessageType } | null>(null);
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'all'>('all');
   
   // Initialize our word selection hook
   const { 
@@ -18,10 +19,15 @@ export const WordSelectionDemo: React.FC = () => {
     isLoading, 
     error 
   } = useWordSelection({
-    difficulty: 'all',
+    difficulty,
     maxHistorySize: 10,
     preventRepetition: true
   });
+
+  // Handle difficulty change
+  const handleDifficultyChange = (newDifficulty: 'easy' | 'medium' | 'hard' | 'all') => {
+    setDifficulty(newDifficulty);
+  };
 
   const handleGuessChange = (value: string) => {
     setGuess(value);
@@ -106,13 +112,59 @@ export const WordSelectionDemo: React.FC = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6 text-center">Guess the Word</h1>
+    <div className="w-full px-6 py-4">
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-center">Difficulty</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
+          <button 
+            onClick={() => handleDifficultyChange('easy')}
+            className={`py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+              difficulty === 'easy' 
+                ? 'bg-green-600 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Easy
+          </button>
+          <button 
+            onClick={() => handleDifficultyChange('medium')}
+            className={`py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+              difficulty === 'medium' 
+                ? 'bg-yellow-600 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Medium
+          </button>
+          <button 
+            onClick={() => handleDifficultyChange('hard')}
+            className={`py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+              difficulty === 'hard' 
+                ? 'bg-red-600 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Hard
+          </button>
+          <button 
+            onClick={() => handleDifficultyChange('all')}
+            className={`py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+              difficulty === 'all' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            All
+          </button>
+        </div>
+      </div>
       
       {isLoading ? (
-        <div className="text-center py-8">Loading...</div>
+        <div className="text-center py-12">
+          <div className="text-xl">Loading...</div>
+        </div>
       ) : (
-        <>
+        <div className="max-w-4xl mx-auto">
           {currentWord && (
             <DefinitionDisplay 
               definition={currentWord.definition} 
@@ -128,10 +180,10 @@ export const WordSelectionDemo: React.FC = () => {
             hasError={feedback?.type === 'error'}
           />
           
-          <div className="mt-4">
+          <div className="mt-6">
             <button 
               onClick={handleSkip}
-              className="w-full py-2 mt-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full py-3 text-lg text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
               disabled={isSubmitting}
             >
               Skip This Word
@@ -139,14 +191,14 @@ export const WordSelectionDemo: React.FC = () => {
           </div>
           
           {feedback && (
-            <div className="mt-4">
+            <div className="mt-6">
               <FeedbackMessage 
                 message={feedback.message} 
                 type={feedback.type} 
               />
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

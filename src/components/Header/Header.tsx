@@ -12,7 +12,7 @@ export const Header: React.FC<HeaderProps> = ({ title, score }) => {
       role="banner"
       aria-label="Game header"
     >
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
         <h1 className="text-2xl font-bold" id="game-title">{title}</h1>
         {score !== undefined && (
           <div 

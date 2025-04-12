@@ -42,7 +42,7 @@ export const WordInput: React.FC<WordInputProps> = ({
 
   return (
     <form 
-      className="space-y-4" 
+      className="w-full space-y-4" 
       onSubmit={handleSubmit} 
       noValidate
       data-testid="word-input-form"
@@ -51,7 +51,7 @@ export const WordInput: React.FC<WordInputProps> = ({
       <div>
         <label 
           htmlFor={inputId} 
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-lg font-medium text-gray-700 mb-2"
         >
           Your Guess:
         </label>
@@ -63,7 +63,7 @@ export const WordInput: React.FC<WordInputProps> = ({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Type your answer..."
-          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+          className={`w-full px-4 py-3 text-lg border rounded-md focus:outline-none focus:ring-2 ${
             hasError ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
           }`}
           aria-describedby={hasError ? errorId : undefined}
@@ -76,7 +76,7 @@ export const WordInput: React.FC<WordInputProps> = ({
         {hasError && (
           <p 
             id={errorId} 
-            className="mt-1 text-sm text-red-600" 
+            className="mt-2 text-sm text-red-600" 
             role="alert"
           >
             {errorMessage}
@@ -84,10 +84,10 @@ export const WordInput: React.FC<WordInputProps> = ({
         )}
       </div>
       
-      <div className="flex space-x-4">
+      <div>
         <button
           type="submit"
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 text-lg rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
           disabled={isSubmitting || disabled}
           aria-busy={isSubmitting}
         >
