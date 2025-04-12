@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { GameProvider, GameStateContext, GameDispatchContext } from './GameContext';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { GameProvider } from './GameContext';
 import { useGameState, useGameDispatch, useGame } from '@/hooks/useGame';
 
 // Test component that uses the game context

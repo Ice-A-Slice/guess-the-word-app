@@ -1,6 +1,9 @@
 import React from 'react';
 import { useGameWithWordSelection } from '@/hooks';
 
+// Definierar tillåtna värden för difficulty
+type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
+
 const GameControls: React.FC = () => {
   const game = useGameWithWordSelection();
   
@@ -21,7 +24,7 @@ const GameControls: React.FC = () => {
           <select
             id="difficulty"
             value={game.difficulty}
-            onChange={(e) => game.setDifficulty(e.target.value as any)}
+            onChange={(e) => game.setDifficulty(e.target.value as Difficulty)}
             className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="easy">Easy</option>

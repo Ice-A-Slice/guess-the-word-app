@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { GameProvider } from '@/contexts';
 import { useGameWithWordSelection } from './useGame';
-import { Word } from '@/types';
 
 // Mock useWordSelection
 jest.mock('./useWordSelection', () => ({

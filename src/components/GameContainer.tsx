@@ -1,6 +1,5 @@
 import React from 'react';
 import { useGameWithWordSelection } from '@/hooks';
-import { wordService } from '@/services';
 import GameControls from './GameControls';
 import GuessForm from './GuessForm';
 
