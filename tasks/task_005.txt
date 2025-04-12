@@ -1,0 +1,105 @@
+# Task ID: 5
+# Title: Implement Guess Validation Logic
+# Status: completed
+# Dependencies: 2, 3
+# Priority: high
+# Description: Create the core game mechanic to validate user guesses against the correct word, with robust error handling and user-friendly feedback.
+# Details:
+Implement functions to: compare user input with the correct word, handle case insensitivity, and provide appropriate feedback. Include robust error handling with user-friendly error messages that offer concrete improvement suggestions. Handle edge cases such as empty inputs, special characters, and extremely long inputs. Implement fuzzy matching to allow for minor typos. Ensure validation works consistently across different devices and input methods.
+
+# Test Strategy:
+Write comprehensive unit tests with various test cases including exact matches, case differences, and near-matches. Test with edge cases like empty inputs, special characters, and extremely long inputs. Verify consistent behavior across different devices and input methods. Test fuzzy matching with various types of minor typos and misspellings.
+
+# Subtasks:
+## 5.1. Basic Word Comparison [completed]
+### Dependencies: None
+### Description: Implement basic word comparison functionality with case insensitivity
+### Details:
+- Create a wordService.checkGuess(guess, correctWord) function that:
+  - Handles null/undefined inputs
+  - Removes leading/trailing whitespace
+  - Performs case-insensitive comparison
+  - Returns boolean result (true/false)
+- Create Jest unit tests for the function covering:
+  - Exact match cases
+  - Case difference scenarios (uppercase, lowercase, mixed)
+  - Whitespace handling
+  - Null/undefined inputs
+- Integrate this function into WordInput component
+- Update the feedback UI to show appropriate messages
+
+
+## 5.2. User-Friendly Error Messages [completed]
+### Dependencies: 5.1
+### Description: Add user-friendly error messages with concrete improvement suggestions
+### Details:
+- Expand the wordService.checkGuess function to return:
+  - Success/failure status
+  - Appropriate feedback message
+  - Hint level (none, mild, strong) based on game state
+- Create feedback messages for:
+  - Correct answer
+  - Wrong answer with hint for length difference
+  - Wrong answer with hint for first/last letter
+  - Empty input submission
+- Add test cases for each feedback message type
+- Update FeedbackMessage component to display these enhanced messages
+- Implement message styling based on feedback type
+
+
+## 5.3. Edge Case Handling [completed]
+### Dependencies: 5.1
+### Description: Implement handling for edge cases (empty inputs, special characters, long inputs)
+### Details:
+- Add validation for:
+  - Empty or whitespace-only inputs
+  - Inputs with special characters
+  - Extremely long inputs (over 50 characters)
+  - Numeric inputs
+- Create specialized error messages for each edge case
+- Add a input sanitization function that:
+  - Removes special characters if needed
+  - Trims excessive whitespace
+  - Truncates very long inputs
+- Add test cases for each edge case
+- Update UI to prevent or handle these edge cases gracefully
+
+
+## 5.4. Fuzzy Matching Algorithm [completed]
+### Dependencies: 5.1, 5.3
+### Description: Develop fuzzy matching algorithm for minor typos
+### Details:
+- Research and evaluate algorithms for fuzzy string matching
+  - Levenshtein distance
+  - Damerau-Levenshtein distance
+  - Jaro-Winkler distance
+- Implement fuzzy matching with configurable threshold
+- Create test cases with common typo patterns:
+  - Character transposition
+  - Missing character
+  - Extra character
+  - Character substitution
+- Add "close match" feedback message
+- Consider length/complexity of the word when determining threshold
+- Update game logic to accept "close enough" answers when appropriate
+
+
+## 5.5. Cross-Device Validation [completed]
+### Dependencies: 5.1, 5.2, 5.3, 5.4
+### Description: Test validation across different devices and input methods
+### Details:
+- Create test plan for cross-device validation
+- Test on:
+  - Desktop browsers (Chrome, Firefox, Safari)
+  - Mobile browsers (iOS Safari, Android Chrome)
+  - Different screen sizes and orientations
+- Test different input methods:
+  - Physical keyboard
+  - Virtual keyboard
+  - Voice input (if applicable)
+  - Copy-paste
+- Document any issues or inconsistencies found
+- Make necessary adjustments to ensure consistent behavior
+- Update automated tests to include these scenarios when possible
+
+

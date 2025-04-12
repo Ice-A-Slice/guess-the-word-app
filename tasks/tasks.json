@@ -126,7 +126,7 @@
       "id": 4,
       "title": "Develop Word Selection Logic",
       "description": "Create functionality to select and present random words from the database.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         2
       ],
@@ -138,7 +138,7 @@
       "id": 5,
       "title": "Implement Guess Validation Logic",
       "description": "Create the core game mechanic to validate user guesses against the correct word, with robust error handling and user-friendly feedback.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         2,
         3
@@ -150,27 +150,27 @@
         {
           "id": "5.1",
           "description": "Implement basic word comparison functionality with case insensitivity",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "5.2",
           "description": "Add user-friendly error messages with concrete improvement suggestions",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "5.3",
           "description": "Implement handling for edge cases (empty inputs, special characters, long inputs)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "5.4",
           "description": "Develop fuzzy matching algorithm for minor typos",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "5.5",
           "description": "Test validation across different devices and input methods",
-          "status": "pending"
+          "status": "completed"
         }
       ]
     },
