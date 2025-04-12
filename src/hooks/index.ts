@@ -4,7 +4,8 @@
  */
 
 // Export hooks
-export { useWordSelection } from './useWordSelection';
+export * from './useWordSelection';
+export * from './useGame';
 
 // Export future hooks here
 // Example: export { useWordSelection } from './useWordSelection'; 
