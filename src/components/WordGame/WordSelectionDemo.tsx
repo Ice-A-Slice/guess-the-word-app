@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useWordSelection } from '@/hooks';
 import { DefinitionDisplay, WordInput, FeedbackMessage } from '@/components';
 import type { MessageType } from '@/components';
+import { wordService, sanitizeInput } from '@/services';
 
 /**
  * Demo component showing how useWordSelection works with UI components
@@ -30,7 +31,9 @@ export const WordSelectionDemo: React.FC = () => {
   };
 
   const handleGuessChange = (value: string) => {
-    setGuess(value);
+    // Add basic sanitization to prevent extremely long inputs
+    const sanitized = sanitizeInput(value, { maxLength: 50 });
+    setGuess(sanitized);
     
     // Clear feedback when user starts typing again
     if (feedback) {
@@ -55,7 +58,7 @@ export const WordSelectionDemo: React.FC = () => {
   }, []);
 
   const handleGuessSubmit = () => {
-    if (!currentWord || !guess.trim()) return;
+    if (!currentWord) return;
     
     setIsSubmitting(true);
     
@@ -66,14 +69,14 @@ export const WordSelectionDemo: React.FC = () => {
     
     // Simple timeout to simulate checking
     checkTimeoutRef.current = setTimeout(() => {
-      const isCorrect = guess.trim().toLowerCase() === currentWord.word.toLowerCase();
+      const result = wordService.validateGuess(guess, currentWord);
       
-      if (isCorrect) {
-        setFeedback({
-          message: 'Correct! Well done!',
-          type: 'success'
-        });
-        
+      setFeedback({
+        message: result.message,
+        type: result.isCorrect ? 'success' : 'error'
+      });
+      
+      if (result.isCorrect) {
         // Clear any existing timeouts
         if (newWordTimeoutRef.current) {
           clearTimeout(newWordTimeoutRef.current);
@@ -85,11 +88,6 @@ export const WordSelectionDemo: React.FC = () => {
           setGuess('');
           setFeedback(null);
         }, 1500);
-      } else {
-        setFeedback({
-          message: 'Sorry, that\'s not correct. Try again!',
-          type: 'error'
-        });
       }
       
       setIsSubmitting(false);

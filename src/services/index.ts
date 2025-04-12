@@ -4,7 +4,7 @@
  */
 
 // Export services
-export { default as wordService } from './wordService';
+export { default as wordService, sanitizeInput, levenshteinDistance, isFuzzyMatch } from './wordService';
 
 // Export future services here
 // Example: export { storageService } from './storageService'; 
