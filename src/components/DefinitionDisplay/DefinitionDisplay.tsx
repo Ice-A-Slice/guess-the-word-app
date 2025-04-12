@@ -17,28 +17,36 @@ export const DefinitionDisplay: React.FC<DefinitionDisplayProps> = ({
   const difficultyText = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 
   return (
-    <div className="mb-8 text-center" data-testid="definition-display">
+    <section 
+      className="mb-8 text-center" 
+      data-testid="definition-display"
+      aria-labelledby="definition-heading"
+    >
       <h2 
         className="text-xl font-semibold mb-2" 
-        id="definition-label"
+        id="definition-heading"
       >
         Definition:
       </h2>
-      <p 
+      <div
         className="text-gray-700 text-lg"
-        aria-labelledby="definition-label"
+        role="region"
+        aria-live="polite"
       >
         {definition}
-      </p>
-      <div className="mt-2 text-sm text-gray-500">
-        Difficulty: 
+      </div>
+      <div 
+        className="mt-2 text-sm text-gray-500"
+        aria-live="polite"
+      >
+        <span id="difficulty-label">Difficulty:</span>
         <span 
           className={`ml-1 font-medium ${difficultyColor}`}
-          aria-label={`Difficulty level: ${difficultyText}`}
+          aria-labelledby="difficulty-label"
         >
           {difficultyText}
         </span>
       </div>
-    </div>
+    </section>
   );
 }; 

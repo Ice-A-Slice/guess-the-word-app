@@ -5,12 +5,16 @@ export type MessageType = 'success' | 'error' | 'info';
 export interface FeedbackMessageProps {
   message: string;
   type: MessageType;
+  id?: string;
 }
 
 export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({ 
   message,
-  type
+  type,
+  id
 }) => {
+  const messageId = id || `feedback-message-${type}`;
+  
   const getTypeStyles = (): string => {
     switch (type) {
       case 'success':
@@ -23,15 +27,15 @@ export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
     }
   };
 
-  const getIcon = (): string => {
+  const getIcon = (): React.ReactNode => {
     switch (type) {
       case 'success':
-        return '✓';
+        return <span aria-hidden="true">✓</span>;
       case 'error':
-        return '✗';
+        return <span aria-hidden="true">✗</span>;
       case 'info':
       default:
-        return 'ℹ';
+        return <span aria-hidden="true">ℹ</span>;
     }
   };
 
@@ -42,10 +46,14 @@ export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
       className={`border p-4 rounded-md my-4 ${getTypeStyles()}`}
       role={roleType}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
+      id={messageId}
+      tabIndex={0}
+      aria-atomic="true"
+      data-testid={`feedback-${type}`}
     >
       <div className="flex items-center">
-        <span className="mr-2" aria-hidden="true">{getIcon()}</span>
-        <span>{message}</span>
+        {getIcon()}
+        <span className="ml-2">{message}</span>
       </div>
     </div>
   );

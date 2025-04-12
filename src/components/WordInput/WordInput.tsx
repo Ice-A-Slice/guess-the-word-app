@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, KeyboardEvent } from 'react';
 
 interface WordInputProps {
   value: string;
@@ -6,6 +6,7 @@ interface WordInputProps {
   onSubmit: () => void;
   isSubmitting: boolean;
   hasError: boolean;
+  errorMessage?: string;
   disabled?: boolean;
 }
 
@@ -15,10 +16,20 @@ export const WordInput: React.FC<WordInputProps> = ({
   onSubmit,
   isSubmitting,
   hasError,
+  errorMessage = 'Please check your answer and try again',
   disabled = false
 }) => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!isSubmitting && !disabled) {
+        onSubmit();
+      }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,36 +37,51 @@ export const WordInput: React.FC<WordInputProps> = ({
     onSubmit();
   };
 
+  const inputId = "word-guess-input";
+  const errorId = "error-message";
+
   return (
     <form 
       className="space-y-4" 
       onSubmit={handleSubmit} 
       noValidate
       data-testid="word-input-form"
+      aria-live="polite"
     >
       <div>
         <label 
-          htmlFor="guess" 
+          htmlFor={inputId} 
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Guess:
         </label>
         <input
           type="text"
-          id="guess"
+          id={inputId}
           name="guess"
           value={value}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder="Type your answer..."
           className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
             hasError ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
           }`}
-          aria-describedby={hasError ? 'error-message' : undefined}
+          aria-describedby={hasError ? errorId : undefined}
           aria-invalid={hasError}
           disabled={isSubmitting || disabled}
           required
           autoComplete="off"
         />
+        
+        {hasError && (
+          <p 
+            id={errorId} 
+            className="mt-1 text-sm text-red-600" 
+            role="alert"
+          >
+            {errorMessage}
+          </p>
+        )}
       </div>
       
       <div className="flex space-x-4">

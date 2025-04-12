@@ -1,10 +1,14 @@
 /**
- * Components exports
+ * Component exports
  * This file serves as the entry point for all component exports
  */
 
-// Export components
-export { Header } from './Header';
+// Core UI components
+export { DefinitionDisplay } from './DefinitionDisplay/DefinitionDisplay';
+export { WordInput } from './WordInput/WordInput';
+export { FeedbackMessage } from './FeedbackMessage/FeedbackMessage';
+export type { MessageType } from './FeedbackMessage/FeedbackMessage';
+export { Header } from './Header/Header';
 
 // Export future components here
 // Example: export { Button } from './Button/Button';
