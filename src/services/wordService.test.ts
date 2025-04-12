@@ -157,5 +157,22 @@ describe('wordService', () => {
       expect(wordService.checkGuess('sample', testWord)).toBe(false);
       expect(wordService.checkGuess('examples', testWord)).toBe(false);
     });
+    
+    test('handles null or undefined guess', () => {
+      expect(wordService.checkGuess(null, testWord)).toBe(false);
+      expect(wordService.checkGuess(undefined, testWord)).toBe(false);
+    });
+    
+    test('handles null or undefined word', () => {
+      expect(wordService.checkGuess('example', null)).toBe(false);
+      expect(wordService.checkGuess('example', undefined)).toBe(false);
+    });
+    
+    test('handles both inputs being null or undefined', () => {
+      expect(wordService.checkGuess(null, null)).toBe(false);
+      expect(wordService.checkGuess(undefined, undefined)).toBe(false);
+      expect(wordService.checkGuess(null, undefined)).toBe(false);
+      expect(wordService.checkGuess(undefined, null)).toBe(false);
+    });
   });
 }); 

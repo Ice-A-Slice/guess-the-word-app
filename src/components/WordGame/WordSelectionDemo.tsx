@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useWordSelection } from '@/hooks';
 import { DefinitionDisplay, WordInput, FeedbackMessage } from '@/components';
 import type { MessageType } from '@/components';
+import { wordService } from '@/services';
 
 /**
  * Demo component showing how useWordSelection works with UI components
@@ -66,7 +67,7 @@ export const WordSelectionDemo: React.FC = () => {
     
     // Simple timeout to simulate checking
     checkTimeoutRef.current = setTimeout(() => {
-      const isCorrect = guess.trim().toLowerCase() === currentWord.word.toLowerCase();
+      const isCorrect = wordService.checkGuess(guess, currentWord);
       
       if (isCorrect) {
         setFeedback({

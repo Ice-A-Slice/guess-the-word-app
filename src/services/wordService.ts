@@ -51,8 +51,18 @@ const wordService = {
 
   /**
    * Check if a guess matches a word (case-insensitive)
+   * 
+   * @param guess - The user's guess
+   * @param word - The word to check against
+   * @returns true if the guess matches the word, false otherwise
    */
-  checkGuess: (guess: string, word: Word): boolean => {
+  checkGuess: (guess: string | null | undefined, word: Word | null | undefined): boolean => {
+    // Handle null/undefined inputs
+    if (!guess || !word) {
+      return false;
+    }
+    
+    // Remove leading/trailing whitespace and perform case-insensitive comparison
     return guess.trim().toLowerCase() === word.word.toLowerCase();
   }
 };
