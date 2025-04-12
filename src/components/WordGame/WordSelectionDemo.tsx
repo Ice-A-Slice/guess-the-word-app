@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useWordSelection } from '@/hooks';
 import { DefinitionDisplay, WordInput, FeedbackMessage } from '@/components';
 import type { MessageType } from '@/components';
-import { wordService } from '@/services';
+import { wordService, sanitizeInput } from '@/services';
 
 /**
  * Demo component showing how useWordSelection works with UI components
@@ -31,7 +31,9 @@ export const WordSelectionDemo: React.FC = () => {
   };
 
   const handleGuessChange = (value: string) => {
-    setGuess(value);
+    // Add basic sanitization to prevent extremely long inputs
+    const sanitized = sanitizeInput(value, { maxLength: 50 });
+    setGuess(sanitized);
     
     // Clear feedback when user starts typing again
     if (feedback) {

@@ -9,6 +9,36 @@ export interface GuessResult {
 }
 
 /**
+ * Sanitizes user input by:
+ * - Trimming whitespace
+ * - Removing special characters if specified
+ * - Truncating to max length if specified
+ */
+export const sanitizeInput = (
+  input: string, 
+  options: { 
+    removeSpecialChars?: boolean;
+    maxLength?: number;
+  } = {}
+): string => {
+  if (!input) return '';
+  
+  let result = input.trim();
+  
+  // Remove special characters if requested
+  if (options.removeSpecialChars) {
+    result = result.replace(/[^\w\s]/gi, '');
+  }
+  
+  // Truncate if requested
+  if (options.maxLength && result.length > options.maxLength) {
+    result = result.substring(0, options.maxLength);
+  }
+  
+  return result;
+};
+
+/**
  * Service for word-related operations
  */
 const wordService = {
@@ -96,13 +126,40 @@ const wordService = {
       };
     }
 
-    const cleanGuess = guess.trim();
+    const cleanGuess = sanitizeInput(guess);
     
     // Handle empty guesses after trimming
     if (cleanGuess === '') {
       return {
         isCorrect: false,
         message: 'Please enter a word.',
+        hintLevel: 'none'
+      };
+    }
+
+    // Handle extremely long inputs (over 50 characters)
+    if (guess.length > 50) {
+      return {
+        isCorrect: false,
+        message: 'Your answer is too long. Please try a shorter word.',
+        hintLevel: 'none'
+      };
+    }
+
+    // Check for numeric-only inputs
+    if (/^\d+$/.test(cleanGuess)) {
+      return {
+        isCorrect: false,
+        message: 'Please enter a word, not just numbers.',
+        hintLevel: 'none'
+      };
+    }
+
+    // Check for special characters
+    if (/[^\w\s]/.test(cleanGuess)) {
+      return {
+        isCorrect: false,
+        message: 'Your answer contains special characters. Try using only letters.',
         hintLevel: 'none'
       };
     }

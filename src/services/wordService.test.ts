@@ -1,4 +1,4 @@
-import wordService, { GuessResult } from './wordService';
+import wordService, { sanitizeInput } from './wordService';
 import { words } from '@/data';
 import { Word } from '@/types';
 
@@ -176,6 +176,38 @@ describe('wordService', () => {
     });
   });
 
+  describe('sanitizeInput', () => {
+    test('trims whitespace by default', () => {
+      expect(sanitizeInput('  hello  ')).toBe('hello');
+    });
+    
+    test('handles empty strings', () => {
+      expect(sanitizeInput('')).toBe('');
+    });
+    
+    test('handles null or undefined inputs', () => {
+      // @ts-expect-error: Testing invalid input
+      expect(sanitizeInput(null)).toBe('');
+      // @ts-expect-error: Testing invalid input
+      expect(sanitizeInput(undefined)).toBe('');
+    });
+    
+    test('removes special characters when requested', () => {
+      expect(sanitizeInput('hello!@#$%^', { removeSpecialChars: true })).toBe('hello');
+    });
+    
+    test('truncates to max length when requested', () => {
+      expect(sanitizeInput('abcdefghij', { maxLength: 5 })).toBe('abcde');
+    });
+    
+    test('applies both special character removal and truncation when requested', () => {
+      expect(sanitizeInput('ab!cd@ef#gh$ij', { 
+        removeSpecialChars: true,
+        maxLength: 5 
+      })).toBe('abcde');
+    });
+  });
+
   describe('validateGuess', () => {
     const testWord: Word = {
       id: 'test-1',
@@ -235,6 +267,28 @@ describe('wordService', () => {
       expect(result.message).toContain('starts with "e"');
       expect(result.message).toContain('ends with "e"');
       expect(result.hintLevel).toBe('strong');
+    });
+
+    test('handles extremely long inputs', () => {
+      const longInput = 'a'.repeat(60);
+      const result = wordService.validateGuess(longInput, testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('too long');
+      expect(result.hintLevel).toBe('none');
+    });
+    
+    test('handles numeric-only inputs', () => {
+      const result = wordService.validateGuess('12345', testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('not just numbers');
+      expect(result.hintLevel).toBe('none');
+    });
+    
+    test('handles inputs with special characters', () => {
+      const result = wordService.validateGuess('ex@mple!', testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('special characters');
+      expect(result.hintLevel).toBe('none');
     });
   });
 }); 
