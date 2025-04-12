@@ -1,4 +1,4 @@
-import wordService from './wordService';
+import wordService, { GuessResult } from './wordService';
 import { words } from '@/data';
 import { Word } from '@/types';
 
@@ -173,6 +173,68 @@ describe('wordService', () => {
       expect(wordService.checkGuess(undefined, undefined)).toBe(false);
       expect(wordService.checkGuess(null, undefined)).toBe(false);
       expect(wordService.checkGuess(undefined, null)).toBe(false);
+    });
+  });
+
+  describe('validateGuess', () => {
+    const testWord: Word = {
+      id: 'test-1',
+      word: 'example',
+      definition: 'A representative form or pattern',
+      difficulty: 'medium'
+    };
+
+    test('returns correct status for exact match', () => {
+      const result = wordService.validateGuess('example', testWord);
+      expect(result.isCorrect).toBe(true);
+      expect(result.message).toContain('Correct');
+      expect(result.hintLevel).toBe('none');
+    });
+
+    test('handles case-insensitive matches', () => {
+      const result = wordService.validateGuess('ExAmPlE', testWord);
+      expect(result.isCorrect).toBe(true);
+    });
+
+    test('handles null/undefined inputs', () => {
+      const result1 = wordService.validateGuess(null, testWord);
+      expect(result1.isCorrect).toBe(false);
+      expect(result1.message).toContain('valid guess');
+
+      const result2 = wordService.validateGuess('example', null);
+      expect(result2.isCorrect).toBe(false);
+      expect(result2.message).toContain('valid guess');
+    });
+
+    test('handles empty guesses', () => {
+      const result = wordService.validateGuess('', testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('Please enter a word');
+      expect(result.hintLevel).toBe('none');
+    });
+
+    test('provides length hints for short guesses', () => {
+      const result = wordService.validateGuess('exam', testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('too short');
+      expect(result.message).toContain('7-letter');
+      expect(result.hintLevel).toBe('mild');
+    });
+
+    test('provides length hints for long guesses', () => {
+      const result = wordService.validateGuess('examples123', testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('too long');
+      expect(result.message).toContain('7-letter');
+      expect(result.hintLevel).toBe('mild');
+    });
+
+    test('provides first/last letter hints for wrong guesses of correct length', () => {
+      const result = wordService.validateGuess('exempla', testWord);
+      expect(result.isCorrect).toBe(false);
+      expect(result.message).toContain('starts with "e"');
+      expect(result.message).toContain('ends with "e"');
+      expect(result.hintLevel).toBe('strong');
     });
   });
 }); 

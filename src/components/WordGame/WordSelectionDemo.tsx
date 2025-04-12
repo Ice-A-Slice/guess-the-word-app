@@ -56,7 +56,7 @@ export const WordSelectionDemo: React.FC = () => {
   }, []);
 
   const handleGuessSubmit = () => {
-    if (!currentWord || !guess.trim()) return;
+    if (!currentWord) return;
     
     setIsSubmitting(true);
     
@@ -67,14 +67,14 @@ export const WordSelectionDemo: React.FC = () => {
     
     // Simple timeout to simulate checking
     checkTimeoutRef.current = setTimeout(() => {
-      const isCorrect = wordService.checkGuess(guess, currentWord);
+      const result = wordService.validateGuess(guess, currentWord);
       
-      if (isCorrect) {
-        setFeedback({
-          message: 'Correct! Well done!',
-          type: 'success'
-        });
-        
+      setFeedback({
+        message: result.message,
+        type: result.isCorrect ? 'success' : 'error'
+      });
+      
+      if (result.isCorrect) {
         // Clear any existing timeouts
         if (newWordTimeoutRef.current) {
           clearTimeout(newWordTimeoutRef.current);
@@ -86,11 +86,6 @@ export const WordSelectionDemo: React.FC = () => {
           setGuess('');
           setFeedback(null);
         }, 1500);
-      } else {
-        setFeedback({
-          message: 'Sorry, that\'s not correct. Try again!',
-          type: 'error'
-        });
       }
       
       setIsSubmitting(false);

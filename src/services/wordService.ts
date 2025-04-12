@@ -1,6 +1,13 @@
 import { words } from '@/data';
 import { Word } from '@/types';
 
+// Define the return type for improved guess validation
+export interface GuessResult {
+  isCorrect: boolean;
+  message: string;
+  hintLevel: 'none' | 'mild' | 'strong';
+}
+
 /**
  * Service for word-related operations
  */
@@ -50,11 +57,8 @@ const wordService = {
   },
 
   /**
-   * Check if a guess matches a word (case-insensitive)
-   * 
-   * @param guess - The user's guess
-   * @param word - The word to check against
-   * @returns true if the guess matches the word, false otherwise
+   * Basic check if a guess matches a word (case-insensitive)
+   * Legacy function for backward compatibility
    */
   checkGuess: (guess: string | null | undefined, word: Word | null | undefined): boolean => {
     // Handle null/undefined inputs
@@ -64,6 +68,79 @@ const wordService = {
     
     // Remove leading/trailing whitespace and perform case-insensitive comparison
     return guess.trim().toLowerCase() === word.word.toLowerCase();
+  },
+
+  /**
+   * Enhanced version of checkGuess that provides detailed feedback
+   * 
+   * @param guess - The user's guess
+   * @param word - The word to check against
+   * @returns GuessResult with match status and feedback
+   */
+  validateGuess: (guess: string | null | undefined, word: Word | null | undefined): GuessResult => {
+    // Handle null/undefined word
+    if (!word) {
+      return {
+        isCorrect: false,
+        message: 'Please enter a valid guess.',
+        hintLevel: 'none'
+      };
+    }
+
+    // Handle null/undefined guess
+    if (guess === null || guess === undefined) {
+      return {
+        isCorrect: false,
+        message: 'Please enter a valid guess.',
+        hintLevel: 'none'
+      };
+    }
+
+    const cleanGuess = guess.trim();
+    
+    // Handle empty guesses after trimming
+    if (cleanGuess === '') {
+      return {
+        isCorrect: false,
+        message: 'Please enter a word.',
+        hintLevel: 'none'
+      };
+    }
+
+    const correctWord = word.word.toLowerCase();
+    const guessLower = cleanGuess.toLowerCase();
+    
+    // Check for exact match
+    if (guessLower === correctWord) {
+      return {
+        isCorrect: true,
+        message: 'Correct! Well done!',
+        hintLevel: 'none'
+      };
+    }
+    
+    // Provide length difference hints
+    const lengthDiff = correctWord.length - guessLower.length;
+    if (lengthDiff > 0) {
+      return {
+        isCorrect: false,
+        message: `Not quite. Your answer is too short - try a ${correctWord.length}-letter word.`,
+        hintLevel: 'mild'
+      };
+    } else if (lengthDiff < 0) {
+      return {
+        isCorrect: false,
+        message: `Not quite. Your answer is too long - try a ${correctWord.length}-letter word.`,
+        hintLevel: 'mild'
+      };
+    }
+    
+    // Provide first/last letter hints
+    return {
+      isCorrect: false,
+      message: `Incorrect. The word starts with "${correctWord[0]}" and ends with "${correctWord[correctWord.length - 1]}".`,
+      hintLevel: 'strong'
+    };
   }
 };
 
