@@ -44,12 +44,16 @@ describe('DefinitionDisplay Component', () => {
   test('has appropriate ARIA attributes for accessibility', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="medium" />);
     
-    // Check definition is properly associated with its label
-    const definition = screen.getByText('Test definition');
-    expect(definition).toHaveAttribute('aria-labelledby', 'definition-label');
+    // Check section has proper labelledby
+    const section = screen.getByTestId('definition-display');
+    expect(section).toHaveAttribute('aria-labelledby', 'definition-heading');
     
-    // Check difficulty has appropriate ARIA label
+    // Check definition container has proper role
+    const definitionContainer = screen.getByText('Test definition').closest('div');
+    expect(definitionContainer).toHaveAttribute('role', 'region');
+    
+    // Check difficulty has proper labeling
     const difficulty = screen.getByText('Medium');
-    expect(difficulty).toHaveAttribute('aria-label', 'Difficulty level: Medium');
+    expect(difficulty).toHaveAttribute('aria-labelledby', 'difficulty-label');
   });
 }); 

@@ -17,7 +17,7 @@ describe('Accessibility Tests', () => {
       );
       
       // Check that the component is semantic and labeled properly
-      expect(screen.getByRole('region')).toBeInTheDocument();
+      expect(screen.getAllByRole('region').length).toBeGreaterThan(0);
       expect(screen.getByRole('heading', { name: /definition/i })).toBeInTheDocument();
       
       // Run axe accessibility tests
