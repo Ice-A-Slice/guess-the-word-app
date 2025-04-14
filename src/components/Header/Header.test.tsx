@@ -111,4 +111,40 @@ describe('Header Component', () => {
     // Modalen bör nu vara stängd
     expect(screen.queryByTestId('settings-modal')).not.toBeInTheDocument();
   });
+
+  test('has fixed positioning for sticky header', () => {
+    render(
+      <GameProvider>
+        <Header title="Test Title" />
+      </GameProvider>
+    );
+    
+    const header = screen.getByRole('banner');
+    
+    // Check for fixed position styling
+    expect(header).toHaveClass('fixed');
+    expect(header).toHaveClass('top-0');
+    expect(header).toHaveClass('left-0');
+    expect(header).toHaveClass('w-full');
+    expect(header).toHaveClass('z-10');
+  });
+
+  test('has responsive design for smaller screens', () => {
+    render(
+      <GameProvider>
+        <Header title="Test Title" score={42} />
+      </GameProvider>
+    );
+    
+    // Check responsive classes
+    const scoreElement = screen.getByLabelText('Current score');
+    expect(scoreElement).toHaveClass('text-sm');
+    expect(scoreElement).toHaveClass('sm:text-base');
+    
+    const settingsIcon = screen.getByLabelText('Game settings').querySelector('svg');
+    expect(settingsIcon).toHaveClass('h-5');
+    expect(settingsIcon).toHaveClass('w-5');
+    expect(settingsIcon).toHaveClass('sm:h-6');
+    expect(settingsIcon).toHaveClass('sm:w-6');
+  });
 }); 

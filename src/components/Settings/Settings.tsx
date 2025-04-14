@@ -14,6 +14,17 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
   const [difficulty, setDifficulty] = useState<Difficulty>(game.difficulty || 'all');
   const [maxSkips, setMaxSkips] = useState<number>(game.maxSkipsPerGame || 5);
   
+  // Add effect to prevent background scrolling when settings are open
+  useEffect(() => {
+    // Disable scrolling on body
+    document.body.style.overflow = 'hidden';
+    
+    // Re-enable scrolling when component is unmounted
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+  
   // Uppdatera lokalt tillstånd när spelet ändras
   useEffect(() => {
     if (game.difficulty) {
@@ -58,7 +69,7 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 my-6 max-h-[90vh] overflow-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Game Settings</h2>
           <button 
