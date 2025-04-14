@@ -43,6 +43,8 @@ export function useGame() {
     skipWord: () => dispatch({ type: 'SKIP_WORD' }),
     setDifficulty: (difficulty: 'easy' | 'medium' | 'hard' | 'all') => 
       dispatch({ type: 'SET_DIFFICULTY', payload: difficulty }),
+    setMaxSkips: (maxSkips: number) => 
+      dispatch({ type: 'SET_MAX_SKIPS', payload: maxSkips }),
     resetGame: () => dispatch({ type: 'RESET_GAME' }),
   };
 }
@@ -90,6 +92,9 @@ export function useGameWithWordSelection(options: GameWithWordSelectionOptions =
     getNextWord,
     handleCorrectGuess,
     handleSkipWord,
+    setMaxSkips: (maxSkips: number) => {
+      dispatch({ type: 'SET_MAX_SKIPS', payload: maxSkips });
+    },
     startGame: () => {
       dispatch({ type: 'START_GAME' });
       // Get the first word if we don't have one already

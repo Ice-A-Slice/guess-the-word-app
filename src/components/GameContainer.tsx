@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameWithWordSelection } from '@/hooks';
 import GameControls from './GameControls';
 import GuessForm from './GuessForm';
 
 const GameContainer: React.FC = () => {
   const game = useGameWithWordSelection();
+  const [showSkipMessage, setShowSkipMessage] = useState(false);
+  const [skippedWord, setSkippedWord] = useState<string | null>(null);
   
   // Handler for correct guesses
   const handleCorrectGuess = (hintsUsed: number) => {
@@ -12,6 +14,27 @@ const GameContainer: React.FC = () => {
     const points = Math.max(1, 3 - hintsUsed);
     game.handleCorrectGuess(points);
   };
+
+  // Enhanced skip handler with visual feedback
+  const handleSkipWord = () => {
+    if (game.currentWord) {
+      setSkippedWord(game.currentWord.word);
+      setShowSkipMessage(true);
+      
+      // Hide message after a delay
+      setTimeout(() => {
+        setShowSkipMessage(false);
+      }, 2000);
+      
+      // Skip the word
+      game.handleSkipWord();
+    }
+  };
+  
+  // Clear skip message when current word changes
+  useEffect(() => {
+    setShowSkipMessage(false);
+  }, [game.currentWord]);
   
   // Render the main game content based on game status
   const renderGameContent = () => {
@@ -25,6 +48,15 @@ const GameContainer: React.FC = () => {
     
     return (
       <div className="w-full max-w-3xl mx-auto">
+        {/* Skip Feedback Message */}
+        {showSkipMessage && skippedWord && (
+          <div className="skip-feedback">
+            <p>
+              Skipped word: <span className="word">{skippedWord}</span>
+            </p>
+          </div>
+        )}
+        
         {/* Definition Display */}
         <div className="mb-8 p-6 bg-white rounded-lg shadow-sm">
           <h3 className="text-lg font-medium text-gray-700 mb-2">Definition:</h3>
@@ -55,7 +87,7 @@ const GameContainer: React.FC = () => {
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Game Controls */}
-      <GameControls />
+      <GameControls onSkipWord={handleSkipWord} />
       
       {/* Only render game content if we're not in idle state */}
       {game.status !== 'idle' && renderGameContent()}

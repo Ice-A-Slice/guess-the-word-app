@@ -4,8 +4,15 @@ import { useGameWithWordSelection } from '@/hooks';
 // Definierar tillåtna värden för difficulty
 type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 
-const GameControls: React.FC = () => {
+interface GameControlsProps {
+  onSkipWord?: () => void;
+}
+
+const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
   const game = useGameWithWordSelection();
+  
+  // Use custom skip handler if provided, otherwise use the default one
+  const handleSkipWord = onSkipWord || game.handleSkipWord;
   
   // Render different controls based on game status
   if (game.status === 'idle') {
@@ -17,21 +24,40 @@ const GameControls: React.FC = () => {
           Choose a difficulty and start playing!
         </p>
         
-        <div className="mb-4">
-          <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
-            Select Difficulty:
-          </label>
-          <select
-            id="difficulty"
-            value={game.difficulty}
-            onChange={(e) => game.setDifficulty(e.target.value as Difficulty)}
-            className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-            <option value="all">All Levels</option>
-          </select>
+        <div className="w-full max-w-xs space-y-4">
+          <div>
+            <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
+              Select Difficulty:
+            </label>
+            <select
+              id="difficulty"
+              value={game.difficulty}
+              onChange={(e) => game.setDifficulty(e.target.value as Difficulty)}
+              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+              <option value="all">All Levels</option>
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="max-skips" className="block text-sm font-medium text-gray-700 mb-1">
+              Maximum Skips:
+            </label>
+            <select
+              id="max-skips"
+              value={game.maxSkipsPerGame}
+              onChange={(e) => game.setMaxSkips(Number(e.target.value))}
+              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="3">3 skips (Hard)</option>
+              <option value="5">5 skips (Normal)</option>
+              <option value="10">10 skips (Easy)</option>
+              <option value="999">Unlimited</option>
+            </select>
+          </div>
         </div>
         
         <button
@@ -46,6 +72,10 @@ const GameControls: React.FC = () => {
   }
   
   if (game.status === 'active') {
+    // Calculate remaining skips
+    const remainingSkips = game.maxSkipsPerGame - game.wordsSkipped;
+    const skipsExhausted = remainingSkips <= 0;
+    
     return (
       <div className="flex flex-col items-center space-y-2 mt-4">
         <div className="flex justify-between w-full max-w-md px-4 py-2 bg-gray-100 rounded-lg">
@@ -57,15 +87,25 @@ const GameControls: React.FC = () => {
             <span className="text-sm text-gray-500">Words:</span>
             <span className="ml-2 font-bold" data-testid="words-guessed-display">{game.wordsGuessed}</span>
           </div>
+          <div>
+            <span className="text-sm text-gray-500">Skips:</span>
+            <span className="ml-2 font-bold" data-testid="remaining-skips">{remainingSkips}</span>
+          </div>
         </div>
         
         <div className="flex space-x-2 mt-4">
           <button
-            onClick={game.handleSkipWord}
-            className="px-4 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+            onClick={handleSkipWord}
+            disabled={skipsExhausted}
+            className={`px-4 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors ${
+              skipsExhausted 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
             data-testid="skip-button"
+            title={skipsExhausted ? 'No more skips available' : 'Skip this word'}
           >
-            Skip Word
+            Skip Word {skipsExhausted && '(0)'}
           </button>
           
           <button
@@ -140,6 +180,23 @@ const GameControls: React.FC = () => {
             </div>
           </div>
         </div>
+        
+        {/* Display skipped words if any */}
+        {game.skippedWords.length > 0 && (
+          <div className="w-full max-w-md mt-4">
+            <h3 className="text-md font-semibold text-gray-700 mb-2">Skipped Words:</h3>
+            <div className="bg-white p-3 rounded-lg shadow-sm max-h-48 overflow-y-auto">
+              <ul className="divide-y divide-gray-100">
+                {game.skippedWords.map((word, index) => (
+                  <li key={`${word.id}-${index}`} className="py-2">
+                    <p className="font-medium">{word.word}</p>
+                    <p className="text-sm text-gray-500">{word.definition}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
         
         <button
           onClick={game.resetGame}

@@ -16,6 +16,9 @@ export interface GameState {
   wordsGuessed: number;
   wordsSkipped: number;
   
+  // Track skipped words in current session
+  skippedWords: Word[];
+  
   // Session statistics
   sessionStats: {
     totalGames: number;
@@ -24,6 +27,9 @@ export interface GameState {
     totalWordsGuessed: number;
     totalWordsSkipped: number;
   };
+  
+  // Game settings
+  maxSkipsPerGame: number;
   
   // User preferences
   difficulty: 'easy' | 'medium' | 'hard' | 'all';
@@ -39,6 +45,7 @@ export type GameAction =
   | { type: 'CORRECT_GUESS'; payload: { points: number } }
   | { type: 'SKIP_WORD' }
   | { type: 'SET_DIFFICULTY'; payload: 'easy' | 'medium' | 'hard' | 'all' }
+  | { type: 'SET_MAX_SKIPS'; payload: number }
   | { type: 'RESET_GAME' };
 
 // Initial state
@@ -48,6 +55,7 @@ const initialState: GameState = {
   score: 0,
   wordsGuessed: 0,
   wordsSkipped: 0,
+  skippedWords: [],
   sessionStats: {
     totalGames: 0,
     highScore: 0,
@@ -55,6 +63,7 @@ const initialState: GameState = {
     totalWordsGuessed: 0,
     totalWordsSkipped: 0,
   },
+  maxSkipsPerGame: 5, // Default value
   difficulty: 'all',
 };
 
@@ -68,6 +77,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         score: 0,
         wordsGuessed: 0,
         wordsSkipped: 0,
+        skippedWords: [],
       };
       
     case 'PAUSE_GAME':
@@ -119,12 +129,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         wordsSkipped: state.wordsSkipped + 1,
+        skippedWords: state.currentWord 
+          ? [...state.skippedWords, state.currentWord]
+          : state.skippedWords,
       };
       
     case 'SET_DIFFICULTY':
       return {
         ...state,
         difficulty: action.payload,
+      };
+      
+    case 'SET_MAX_SKIPS':
+      return {
+        ...state,
+        maxSkipsPerGame: action.payload,
       };
       
     case 'RESET_GAME':
