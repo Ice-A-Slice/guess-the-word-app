@@ -135,14 +135,16 @@ const GameContainer: React.FC = () => {
           </div>
         )}
         
-        {/* Definition Display */}
-        <div className={`transition-all duration-300 ${wordTransition ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-          <DefinitionDisplay 
-            definition={game.currentWord.definition}
-            difficulty={game.currentWord.difficulty}
-            animate={!wordTransition}
-          />
-        </div>
+        {/* Definition Display - only shown in active state */}
+        {game.status === 'active' && (
+          <div className={`transition-all duration-300 ${wordTransition ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+            <DefinitionDisplay 
+              definition={game.currentWord.definition}
+              difficulty={game.currentWord.difficulty}
+              animate={!wordTransition}
+            />
+          </div>
+        )}
         
         {/* Guess Form - only shown in active state */}
         {game.status === 'active' && (
