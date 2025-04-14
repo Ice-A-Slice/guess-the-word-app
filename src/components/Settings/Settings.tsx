@@ -11,13 +11,17 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
   const game = useGameWithWordSelection();
   
   // Använd lokala tillstånd för inställningar som sedan sparas vid klick på Spara
-  const [difficulty, setDifficulty] = useState<Difficulty>(game.difficulty);
-  const [maxSkips, setMaxSkips] = useState<number>(game.maxSkipsPerGame);
+  const [difficulty, setDifficulty] = useState<Difficulty>(game.difficulty || 'all');
+  const [maxSkips, setMaxSkips] = useState<number>(game.maxSkipsPerGame || 5);
   
   // Uppdatera lokalt tillstånd när spelet ändras
   useEffect(() => {
-    setDifficulty(game.difficulty);
-    setMaxSkips(game.maxSkipsPerGame);
+    if (game.difficulty) {
+      setDifficulty(game.difficulty);
+    }
+    if (game.maxSkipsPerGame) {
+      setMaxSkips(game.maxSkipsPerGame);
+    }
   }, [game.difficulty, game.maxSkipsPerGame]);
   
   // Funktion för att spara inställningar
@@ -28,6 +32,28 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     
     // Stäng dialog
     onClose();
+  };
+  
+  // Hjälpfunktion för att få visuell text för svårighetsgrad
+  const getDifficultyLabel = (diff: Difficulty) => {
+    switch(diff) {
+      case 'easy': return 'Easy';
+      case 'medium': return 'Medium';
+      case 'hard': return 'Hard';
+      case 'all': return 'All Levels';
+      default: return 'All Levels';
+    }
+  };
+  
+  // Hjälpfunktion för att få visuell text för skippantal
+  const getSkipsLabel = (skips: number) => {
+    switch(skips) {
+      case 3: return '3 skips (Hard)';
+      case 5: return '5 skips (Normal)';
+      case 10: return '10 skips (Easy)';
+      case 999: return 'Unlimited';
+      default: return '5 skips (Normal)';
+    }
   };
   
   return (
@@ -51,34 +77,44 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
             <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
               Select Difficulty:
             </label>
-            <select
-              id="difficulty"
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-              <option value="all">All Levels</option>
-            </select>
+            <div className="relative">
+              <select
+                id="difficulty"
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+                className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="all">All Levels</option>
+              </select>
+              <div className="absolute top-2 right-10 text-sm text-gray-500">
+                Current: {getDifficultyLabel(difficulty)}
+              </div>
+            </div>
           </div>
           
           <div>
             <label htmlFor="max-skips" className="block text-sm font-medium text-gray-700 mb-1">
               Maximum Skips:
             </label>
-            <select
-              id="max-skips"
-              value={maxSkips}
-              onChange={(e) => setMaxSkips(Number(e.target.value))}
-              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="3">3 skips (Hard)</option>
-              <option value="5">5 skips (Normal)</option>
-              <option value="10">10 skips (Easy)</option>
-              <option value="999">Unlimited</option>
-            </select>
+            <div className="relative">
+              <select
+                id="max-skips"
+                value={maxSkips}
+                onChange={(e) => setMaxSkips(Number(e.target.value))}
+                className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="3">3 skips (Hard)</option>
+                <option value="5">5 skips (Normal)</option>
+                <option value="10">10 skips (Easy)</option>
+                <option value="999">Unlimited</option>
+              </select>
+              <div className="absolute top-2 right-10 text-sm text-gray-500">
+                Current: {getSkipsLabel(maxSkips)}
+              </div>
+            </div>
           </div>
           
           <div className="pt-4">
