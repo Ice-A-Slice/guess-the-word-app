@@ -1,7 +1,14 @@
 'use client';
 
-import React, { createContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useReducer, ReactNode, useEffect } from 'react';
 import { Word } from '@/types';
+import { 
+  saveGameState, 
+  saveSessionStats, 
+  loadGameState, 
+  loadSessionStats, 
+  hasSavedSession 
+} from '@/utils/localStorage';
 
 // Game State Interface
 export interface GameState {
@@ -83,7 +90,7 @@ const initialState: GameState = {
 };
 
 // Reducer function
-function gameReducer(state: GameState, action: GameAction): GameState {
+export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME':
       return {
@@ -204,7 +211,34 @@ interface GameProviderProps {
 }
 
 export function GameProvider({ children }: GameProviderProps) {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  // Initialize with saved state if available
+  const getInitialState = (): GameState => {
+    if (hasSavedSession()) {
+      const savedState = loadGameState();
+      const savedStats = loadSessionStats();
+      
+      if (savedState) {
+        return {
+          ...initialState,
+          ...savedState,
+          sessionStats: savedStats || initialState.sessionStats,
+        };
+      }
+    }
+    
+    return initialState;
+  };
+  
+  const [state, dispatch] = useReducer(gameReducer, getInitialState());
+  
+  // Save state changes to localStorage
+  useEffect(() => {
+    // Don't save state during initial render
+    if (state !== initialState) {
+      saveGameState(state);
+      saveSessionStats(state.sessionStats);
+    }
+  }, [state]);
   
   return (
     <GameStateContext.Provider value={state}>
