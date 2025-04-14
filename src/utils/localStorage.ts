@@ -3,7 +3,7 @@
 import { Word } from '@/types';
 
 // Keys for localStorage
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   SESSION_STATE: 'guesser-game-state',
   SESSION_STATS: 'guesser-session-stats',
 };
@@ -21,7 +21,6 @@ export interface PersistedGameState {
   wordsSkipped: number;
   currentStreak: number;
   longestStreak: number;
-  skippedWords: Word[];
   difficulty: 'easy' | 'medium' | 'hard' | 'all';
   maxSkipsPerGame: number;
 }
@@ -63,7 +62,6 @@ export function saveGameState(state: {
       wordsSkipped: state.wordsSkipped,
       currentStreak: state.currentStreak,
       longestStreak: state.longestStreak,
-      skippedWords: state.skippedWords || [],
       difficulty: state.difficulty,
       maxSkipsPerGame: state.maxSkipsPerGame,
     };
