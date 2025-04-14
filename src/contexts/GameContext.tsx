@@ -94,6 +94,8 @@ const initialState: GameState = {
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME':
+      // Clear any existing game state before starting a new game
+      clearGameState();
       return {
         ...state,
         status: 'active',

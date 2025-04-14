@@ -5,7 +5,7 @@ import GuessForm from './GuessForm';
 import ScoreAnimation from './ScoreAnimation';
 import { FeedbackMessage } from './FeedbackMessage';
 import { DefinitionDisplay } from './DefinitionDisplay/DefinitionDisplay';
-import { SessionSummary } from './index';
+import SessionSummary from './SessionSummary';
 
 const GameContainer: React.FC = () => {
   const game = useGameWithWordSelection();

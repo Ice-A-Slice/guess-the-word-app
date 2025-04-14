@@ -20,7 +20,18 @@ export const saveGameState = (state: GameState): void => {
   
   try {
     // We don't need to save everything, just the important parts
-    const stateToSave = {
+    const stateToSave: {
+      status: GameState['status'];
+      score: number;
+      wordsGuessed: number;
+      wordsSkipped: number;
+      currentStreak: number;
+      longestStreak: number;
+      skippedWords: Word[];
+      scoreHistory: GameState['scoreHistory'];
+      difficulty: GameState['difficulty'];
+      maxSkipsPerGame: number;
+    } = {
       status: state.status,
       score: state.score,
       wordsGuessed: state.wordsGuessed,
