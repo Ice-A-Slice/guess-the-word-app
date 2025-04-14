@@ -41,27 +41,23 @@ describe('DefinitionDisplay Component', () => {
   test('renders correct difficulty styles for hard level', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="hard" />);
     const container = screen.getByTestId('definition-display');
-    const hasPurpleClass = container.innerHTML.includes('text-purple-600') || 
-                          container.innerHTML.includes('text-yellow-600');
+    
+    const hasPurpleClass = container.innerHTML.includes('text-purple-600');
     expect(hasPurpleClass).toBe(true);
   });
 
   test('has appropriate ARIA attributes for accessibility', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="medium" />);
     
-    // Check section has proper labelledby
     const section = screen.getByTestId('definition-display');
     expect(section).toHaveAttribute('aria-labelledby', 'definition-heading');
     
-    // Verifiera att det finns åtminstone ett element med role="region"
     const hasRegionRole = screen.getAllByRole('region').length > 0;
     expect(hasRegionRole).toBe(true);
     
-    // Verifiera att definitionen visas
     const definitionElement = screen.getByText(/Test definition/i);
     expect(definitionElement).toBeInTheDocument();
     
-    // Check difficulty has proper labeling
     const difficulty = screen.getByText('Medium');
     expect(difficulty).toHaveAttribute('aria-labelledby', 'difficulty-label');
   });
