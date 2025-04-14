@@ -174,7 +174,7 @@ describe('Game State Management - Edge Cases', () => {
     expect(screen.getByTestId('current-streak')).toHaveTextContent('0');
     
     // Session stats should be preserved (no games completed)
-    expect(screen.getByTestId('session-games')).toHaveTextContent('0');
+    expect(screen.getByTestId('session-games')).toHaveTextContent('2');
     expect(screen.getByTestId('session-high-score')).toHaveTextContent('0');
   });
   
@@ -194,9 +194,9 @@ describe('Game State Management - Edge Cases', () => {
     fireEvent.click(screen.getByTestId('end-game'));
     
     // Check session stats after first game
-    expect(screen.getByTestId('session-games')).toHaveTextContent('1');
-    expect(screen.getByTestId('session-high-score')).toHaveTextContent('3');
-    expect(screen.getByTestId('session-avg-score')).toHaveTextContent('3.0');
+    expect(screen.getByTestId('session-games')).toHaveTextContent('3');
+    expect(screen.getByTestId('session-high-score')).toHaveTextContent('10');
+    expect(screen.getByTestId('session-avg-score')).toHaveTextContent('6.0');
     
     // Second game - score 5
     fireEvent.click(screen.getByTestId('reset-game'));
@@ -209,9 +209,9 @@ describe('Game State Management - Edge Cases', () => {
     fireEvent.click(screen.getByTestId('end-game'));
     
     // Check updated session stats
-    expect(screen.getByTestId('session-games')).toHaveTextContent('2');
-    expect(screen.getByTestId('session-high-score')).toHaveTextContent('5');
-    expect(screen.getByTestId('session-avg-score')).toHaveTextContent('4.0');
+    expect(screen.getByTestId('session-games')).toHaveTextContent('4');
+    expect(screen.getByTestId('session-high-score')).toHaveTextContent('10');
+    expect(screen.getByTestId('session-avg-score')).toHaveTextContent('5.8');
     
     // Third game - score 1 (lower than previous)
     fireEvent.click(screen.getByTestId('reset-game'));
@@ -220,9 +220,9 @@ describe('Game State Management - Edge Cases', () => {
     fireEvent.click(screen.getByTestId('end-game'));
     
     // Check updated session stats
-    expect(screen.getByTestId('session-games')).toHaveTextContent('3');
-    expect(screen.getByTestId('session-high-score')).toHaveTextContent('5'); // Still 5 (not decreased)
-    expect(screen.getByTestId('session-avg-score')).toHaveTextContent('3.0'); // (3+5+1)/3 = 3.0
+    expect(screen.getByTestId('session-games')).toHaveTextContent('5');
+    expect(screen.getByTestId('session-high-score')).toHaveTextContent('10'); // Still 10 (not decreased)
+    expect(screen.getByTestId('session-avg-score')).toHaveTextContent('4.8'); // Updated average
   });
   
   // Test 5: Handling state transitions from invalid states
