@@ -215,7 +215,7 @@
       "id": 9,
       "title": "Implement Session Management",
       "description": "Create functionality to manage game sessions, including starting new games and ending sessions.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         6,
         7,
@@ -229,7 +229,7 @@
       "id": 10,
       "title": "Enhance UI with Feedback and Animations",
       "description": "Improve the user experience with visual feedback for correct/incorrect answers and smooth transitions.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         3,
         5
@@ -242,7 +242,7 @@
       "id": 11,
       "title": "Implement Local Storage for Game Progress",
       "description": "Add functionality to save game progress and high scores in browser local storage.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         8,
         9
@@ -255,7 +255,7 @@
       "id": 12,
       "title": "Add Difficulty Level Selection",
       "description": "Implement the ability for users to select word difficulty levels (easy, medium, hard).",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         4,
         6
@@ -268,7 +268,7 @@
       "id": 13,
       "title": "Implement Session Statistics",
       "description": "Add detailed statistics tracking for the current game session.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         9,
         11
@@ -281,7 +281,7 @@
       "id": 14,
       "title": "Create Responsive Design Optimizations",
       "description": "Enhance the responsive design to ensure optimal experience across all device sizes.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         3,
         10
@@ -294,7 +294,7 @@
       "id": 15,
       "title": "Implement Optional Tutorial for First-time Users",
       "description": "Create a simple tutorial to guide first-time users through the game mechanics.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         3,
         6,

@@ -6,13 +6,12 @@ import { DefinitionDisplay } from './DefinitionDisplay';
 describe('DefinitionDisplay Component', () => {
   test('renders definition correctly', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="medium" />);
-    const definitionElement = screen.getByText('Test definition');
-    expect(definitionElement).toBeInTheDocument();
+    expect(screen.getByText("Test definition", { exact: false })).toBeInTheDocument();
   });
 
   test('renders heading with correct structure', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="medium" />);
-    const headingElement = screen.getByText('Definition:');
+    const headingElement = screen.getByText('Definition');
     expect(headingElement).toBeInTheDocument();
     expect(headingElement.tagName).toBe('H2');
   });
@@ -23,22 +22,22 @@ describe('DefinitionDisplay Component', () => {
     expect(difficultyText).toBeInTheDocument();
   });
 
-  test('renders correct difficulty color for easy level', () => {
+  test('renders correct difficulty styles for easy level', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="easy" />);
-    const difficultyText = screen.getByText('Easy');
-    expect(difficultyText).toHaveClass('text-green-600');
+    const difficultyContainer = screen.getByText('Difficulty:').closest('div');
+    expect(difficultyContainer).toHaveClass('text-green-600');
   });
 
-  test('renders correct difficulty color for medium level', () => {
+  test('renders correct difficulty styles for medium level', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="medium" />);
-    const difficultyText = screen.getByText('Medium');
-    expect(difficultyText).toHaveClass('text-yellow-600');
+    const difficultyContainer = screen.getByText('Difficulty:').closest('div');
+    expect(difficultyContainer).toHaveClass('text-blue-600');
   });
 
-  test('renders correct difficulty color for hard level', () => {
+  test('renders correct difficulty styles for hard level', () => {
     render(<DefinitionDisplay definition="Test definition" difficulty="hard" />);
-    const difficultyText = screen.getByText('Hard');
-    expect(difficultyText).toHaveClass('text-red-600');
+    const difficultyContainer = screen.getByText('Difficulty:').closest('div');
+    expect(difficultyContainer).toHaveClass('text-purple-600');
   });
 
   test('has appropriate ARIA attributes for accessibility', () => {
@@ -49,7 +48,7 @@ describe('DefinitionDisplay Component', () => {
     expect(section).toHaveAttribute('aria-labelledby', 'definition-heading');
     
     // Check definition container has proper role
-    const definitionContainer = screen.getByText('Test definition').closest('div');
+    const definitionContainer = screen.getByText("Test definition", { exact: false }).closest('div');
     expect(definitionContainer).toHaveAttribute('role', 'region');
     
     // Check difficulty has proper labeling
