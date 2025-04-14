@@ -33,7 +33,13 @@ describe('GameControls', () => {
       averageScore: 8,
       totalWordsGuessed: 16,
       totalWordsSkipped: 4,
+      bestStreak: 5
     },
+    scoreHistory: [],
+    skippedWords: [],
+    currentStreak: 0,
+    longestStreak: 0,
+    maxSkipsPerGame: 5,
     startGame: jest.fn(),
     pauseGame: jest.fn(),
     resumeGame: jest.fn(),
@@ -145,6 +151,7 @@ describe('GameControls', () => {
       score: 8,
       wordsGuessed: 8,
       wordsSkipped: 2,
+      longestStreak: 0,
     });
     
     render(
@@ -156,7 +163,7 @@ describe('GameControls', () => {
     expect(screen.getByText('Game Complete!')).toBeInTheDocument();
     expect(screen.getByTestId('final-score')).toHaveTextContent('8');
     expect(screen.getByTestId('final-words-guessed')).toHaveTextContent('8');
-    expect(screen.getByTestId('final-words-skipped')).toHaveTextContent('2');
+    expect(screen.getByTestId('longest-streak')).toHaveTextContent('0');
     expect(screen.getByTestId('high-score')).toHaveTextContent('10');
     expect(screen.getByTestId('new-game-button')).toBeInTheDocument();
   });
