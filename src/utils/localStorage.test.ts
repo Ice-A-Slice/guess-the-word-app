@@ -27,6 +27,7 @@ const localStorageMock = (() => {
       store = {};
     }),
     store, // Expose store for testing
+
   };
 })();
 
@@ -88,6 +89,7 @@ describe('localStorage utilities', () => {
   });
   
   test('loadGameState loads saved state from localStorage', () => {
+
     // First save some state
     localStorageMock.setItem(STORAGE_KEYS.SESSION_STATE, JSON.stringify(sampleGameState));
     

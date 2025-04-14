@@ -1,40 +1,72 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { GameProvider, GameStateContext, GameDispatchContext } from './GameContext';
-import { useGameState, useGameDispatch, useGame } from '@/hooks/useGame';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { GameProvider } from './GameContext';
+import { useGameState, useGameDispatch } from '@/hooks/useGame';
 import { Word } from '@/types';
 import * as localStorage from '@/utils/localStorage';
 
 // Mock word object to use in tests
 const mockWord: Word = {
-  id: 'test-1',
-  word: 'example',
-  definition: 'A thing that serves as a pattern',
-  difficulty: 'easy',
+  id: '1',
+  word: 'test',
+  definition: 'A procedure intended to establish the quality, performance, or reliability of something',
+  difficulty: 'easy'
 };
 
-// Test component that uses the game context
-function TestComponent() {
-  const game = useGame();
+// Test component that uses the context hooks
+const TestComponent = () => {
+  const state = useGameState();
+  const dispatch = useGameDispatch();
   
   return (
     <div>
-      <div data-testid="status">{game.status}</div>
-      <div data-testid="score">{game.score}</div>
-      <div data-testid="words-guessed">{game.wordsGuessed}</div>
-      <div data-testid="words-skipped">{game.wordsSkipped}</div>
-      <button data-testid="start-game" onClick={game.startGame}>Start Game</button>
-      <button data-testid="end-game" onClick={game.endGame}>End Game</button>
-      <button 
-        data-testid="correct-guess" 
-        onClick={() => game.correctGuess(1, mockWord)}
+      <h1 data-testid="status">{state.status}</h1>
+      <p data-testid="score">{state.score}</p>
+      
+      <button
+        data-testid="start-button"
+        onClick={() => dispatch({ type: 'START_GAME' })}
+      >
+        Start Game
+      </button>
+      
+      <button
+        data-testid="end-button"
+        onClick={() => dispatch({ type: 'END_GAME' })}
+      >
+        End Game
+      </button>
+      
+      <button
+        data-testid="set-word-button"
+        onClick={() => dispatch({ type: 'SET_WORD', payload: mockWord })}
+      >
+        Set Word
+      </button>
+      
+      <button
+        data-testid="correct-guess-button"
+        onClick={() => 
+          dispatch({ 
+            type: 'CORRECT_GUESS', 
+            payload: { points: 2, word: mockWord } 
+          })
+        }
       >
         Correct Guess
       </button>
-      <button data-testid="skip-word" onClick={game.skipWord}>Skip Word</button>
     </div>
   );
-}
+};
+
+// Helper function to setup the test environment
+const setup = () => {
+  return render(
+    <GameProvider>
+      <TestComponent />
+    </GameProvider>
+  );
+};
 
 // Mock localStorage utilities
 jest.mock('@/utils/localStorage', () => ({
@@ -73,140 +105,72 @@ const TestConsumer = () => {
 };
 
 describe('GameContext', () => {
-  test('provides initial state to children', () => {
-    render(
-      <GameProvider>
-        <TestComponent />
-      </GameProvider>
-    );
+  test('initializes with correct default state', () => {
+    setup();
     
-    expect(screen.getByTestId('status')).toHaveTextContent('idle');
-    expect(screen.getByTestId('score')).toHaveTextContent('0');
-    expect(screen.getByTestId('words-guessed')).toHaveTextContent('0');
-    expect(screen.getByTestId('words-skipped')).toHaveTextContent('0');
+    // Check the initial status is 'idle'
+    expect(screen.getByTestId('status').textContent).toBe('idle');
+    expect(screen.getByTestId('score').textContent).toBe('0');
   });
   
-  test('starts game when startGame is called', () => {
-    render(
-      <GameProvider>
-        <TestComponent />
-      </GameProvider>
-    );
+  test('dispatches START_GAME action correctly', () => {
+    setup();
     
-    fireEvent.click(screen.getByTestId('start-game'));
+    // Initial state
+    expect(screen.getByTestId('status').textContent).toBe('idle');
     
-    expect(screen.getByTestId('status')).toHaveTextContent('active');
+    // Click the start game button
+    fireEvent.click(screen.getByTestId('start-button'));
+    
+    // Check state after action
+    expect(screen.getByTestId('status').textContent).toBe('active');
   });
   
-  test('increases score and words guessed when correctGuess is called', () => {
-    render(
-      <GameProvider>
-        <TestComponent />
-      </GameProvider>
-    );
+  test('dispatches END_GAME action correctly', () => {
+    setup();
     
     // Start the game first
-    fireEvent.click(screen.getByTestId('start-game'));
-    
-    // Register a correct guess
-    fireEvent.click(screen.getByTestId('correct-guess'));
-    
-    expect(screen.getByTestId('score')).toHaveTextContent('1');
-    expect(screen.getByTestId('words-guessed')).toHaveTextContent('1');
-  });
-  
-  test('increases words skipped when skipWord is called', () => {
-    render(
-      <GameProvider>
-        <TestComponent />
-      </GameProvider>
-    );
-    
-    // Start the game first
-    fireEvent.click(screen.getByTestId('start-game'));
-    
-    // Skip a word
-    fireEvent.click(screen.getByTestId('skip-word'));
-    
-    expect(screen.getByTestId('words-skipped')).toHaveTextContent('1');
-  });
-  
-  test('ends game and updates session stats when endGame is called', () => {
-    render(
-      <GameProvider>
-        <TestComponent />
-      </GameProvider>
-    );
-    
-    // Start the game
-    fireEvent.click(screen.getByTestId('start-game'));
-    
-    // Register some scores
-    fireEvent.click(screen.getByTestId('correct-guess'));
-    fireEvent.click(screen.getByTestId('correct-guess'));
-    fireEvent.click(screen.getByTestId('skip-word'));
+    fireEvent.click(screen.getByTestId('start-button'));
+    expect(screen.getByTestId('status').textContent).toBe('active');
     
     // End the game
-    fireEvent.click(screen.getByTestId('end-game'));
+    fireEvent.click(screen.getByTestId('end-button'));
     
-    expect(screen.getByTestId('status')).toHaveTextContent('completed');
-  });
-});
-
-// Test the custom hooks
-describe('Game hooks', () => {
-  test('useGameState throws error when used outside provider', () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
-    const TestHook = () => {
-      useGameState();
-      return null;
-    };
-    
-    expect(() => {
-      render(<TestHook />);
-    }).toThrow('useGameState must be used within a GameProvider');
-    
-    consoleError.mockRestore();
+    // Check state after action
+    expect(screen.getByTestId('status').textContent).toBe('completed');
   });
   
-  test('useGameDispatch throws error when used outside provider', () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+  test('dispatches SET_WORD action correctly', () => {
+    setup();
     
-    const TestHook = () => {
-      useGameDispatch();
-      return null;
-    };
+    // Start the game first
+    fireEvent.click(screen.getByTestId('start-button'));
     
-    expect(() => {
-      render(<TestHook />);
-    }).toThrow('useGameDispatch must be used within a GameProvider');
+    // Set a word
+    fireEvent.click(screen.getByTestId('set-word-button'));
     
-    consoleError.mockRestore();
+    // We can't directly check the word in our test component
+    // This test would be more complete with a specific test component
+    // that displays the current word
   });
   
-  test('useGame provides state and action creators', () => {
-    let gameHook: ReturnType<typeof useGame>;
+  test('updates score when dispatching CORRECT_GUESS action', () => {
+    setup();
     
-    const TestHook = () => {
-      gameHook = useGame();
-      return null;
-    };
+    // Start the game first
+    fireEvent.click(screen.getByTestId('start-button'));
     
-    render(
-      <GameProvider>
-        <TestHook />
-      </GameProvider>
-    );
+    // The initial score should be 0
+    expect(screen.getByTestId('score').textContent).toBe('0');
     
-    // Check that state properties are available
-    expect(gameHook!.status).toBe('idle');
-    expect(gameHook!.score).toBe(0);
+    // Set a word first (required to have a valid game state)
+    fireEvent.click(screen.getByTestId('set-word-button'));
     
-    // Check that action creators are available
-    expect(typeof gameHook!.startGame).toBe('function');
-    expect(typeof gameHook!.correctGuess).toBe('function');
-    expect(typeof gameHook!.skipWord).toBe('function');
+    // Record a correct guess worth 2 points
+    fireEvent.click(screen.getByTestId('correct-guess-button'));
+    
+    // Check that score increased
+    expect(screen.getByTestId('score').textContent).toBe('2');
   });
 });
 

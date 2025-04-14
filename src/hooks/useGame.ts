@@ -52,6 +52,7 @@ export function useGame() {
     setMaxSkips: (maxSkips: number) => 
       dispatch({ type: 'SET_MAX_SKIPS', payload: maxSkips }),
     resetGame: () => dispatch({ type: 'RESET_GAME' }),
+    continueSession: () => dispatch({ type: 'CONTINUE_SESSION' }),
   };
 }
 
@@ -120,6 +121,13 @@ export function useGameWithWordSelection(options: GameWithWordSelectionOptions =
     resetGame: () => {
       dispatch({ type: 'RESET_GAME' });
       getNextWord();
+    },
+    continueSession: () => {
+      dispatch({ type: 'CONTINUE_SESSION' });
+      // If there's no current word, get one
+      if (!currentWord) {
+        getNextWord();
+      }
     },
   };
 } 

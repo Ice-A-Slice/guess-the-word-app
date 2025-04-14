@@ -40,11 +40,13 @@ describe('GameControls', () => {
     currentStreak: 0,
     longestStreak: 0,
     maxSkipsPerGame: 5,
+    hasSavedSession: false,
     startGame: jest.fn(),
     pauseGame: jest.fn(),
     resumeGame: jest.fn(),
     endGame: jest.fn(),
     resetGame: jest.fn(),
+    continueSession: jest.fn(),
     handleCorrectGuess: jest.fn(),
     handleSkipWord: jest.fn(),
     getNextWord: jest.fn(),
@@ -66,6 +68,38 @@ describe('GameControls', () => {
     expect(screen.getByText('Guess the Word Game')).toBeInTheDocument();
     expect(screen.getByText('Select Difficulty:')).toBeInTheDocument();
     expect(screen.getByTestId('start-button')).toBeInTheDocument();
+  });
+  
+  test('shows continue session option when a saved session exists', () => {
+    (gameHooks.useGameWithWordSelection as jest.Mock).mockReturnValue({
+      ...mockGameHook,
+      hasSavedSession: true,
+    });
+    
+    render(
+      <GameProvider>
+        <GameControls />
+      </GameProvider>
+    );
+    
+    expect(screen.getByText('You have a saved session')).toBeInTheDocument();
+    expect(screen.getByTestId('continue-session-button')).toBeInTheDocument();
+  });
+  
+  test('calls continueSession when continue button is clicked', () => {
+    (gameHooks.useGameWithWordSelection as jest.Mock).mockReturnValue({
+      ...mockGameHook,
+      hasSavedSession: true,
+    });
+    
+    render(
+      <GameProvider>
+        <GameControls />
+      </GameProvider>
+    );
+    
+    fireEvent.click(screen.getByTestId('continue-session-button'));
+    expect(mockGameHook.continueSession).toHaveBeenCalled();
   });
   
   test('calls startGame when start button is clicked', () => {
@@ -163,28 +197,18 @@ describe('GameControls', () => {
     expect(screen.getByText('Game Complete!')).toBeInTheDocument();
     expect(screen.getByTestId('final-score')).toHaveTextContent('8');
     expect(screen.getByTestId('final-words-guessed')).toHaveTextContent('8');
-    
-    // More robust check - try both possible elements
-    try {
-      // Try the local version first (longest-streak)
-      const streakElement = screen.queryByTestId('longest-streak');
-      if (streakElement) {
-        expect(streakElement).toHaveTextContent('0');
-      } else {
-        // Try the GitHub version (final-words-skipped)
-        expect(screen.getByTestId('final-words-skipped')).toHaveTextContent('2');
-      }
-    } catch (e) {
-      // If both fail, we'll get a more descriptive error message
-      console.log('Neither longest-streak nor final-words-skipped elements found in the render');
-      throw e;
-    }
-    
+    expect(screen.getByTestId('longest-streak')).toHaveTextContent('0');
     expect(screen.getByTestId('high-score')).toHaveTextContent('10');
-    expect(screen.getByTestId('new-game-button')).toBeInTheDocument();
+    expect(screen.getByTestId('play-again-button')).toBeInTheDocument();
+    
+    // Check for session stats that were added
+    expect(screen.getByTestId('total-games')).toHaveTextContent('2');
+    expect(screen.getByTestId('average-score')).toHaveTextContent('8');
+    expect(screen.getByTestId('total-words-guessed')).toHaveTextContent('16');
+    expect(screen.getByTestId('best-streak')).toHaveTextContent('5');
   });
   
-  test('calls resetGame when new game button is clicked', () => {
+  test('calls startGame when play again button is clicked', () => {
     (gameHooks.useGameWithWordSelection as jest.Mock).mockReturnValue({
       ...mockGameHook,
       status: 'completed',
@@ -196,8 +220,8 @@ describe('GameControls', () => {
       </GameProvider>
     );
     
-    fireEvent.click(screen.getByTestId('new-game-button'));
-    expect(mockGameHook.resetGame).toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('play-again-button'));
+    expect(mockGameHook.startGame).toHaveBeenCalled();
   });
   
   test('uses custom onSkipWord handler when provided', () => {

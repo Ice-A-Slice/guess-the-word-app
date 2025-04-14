@@ -28,6 +28,21 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord, onEndGame }) =>
           Choose a difficulty and start playing!
         </p>
         
+        {/* Display option to continue saved session if available */}
+        {game.hasSavedSession && (
+          <div className="w-full max-w-xs bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">You have a saved session</h3>
+            <p className="text-xs text-blue-700 mb-3">Continue your previous game or start a new one.</p>
+            <button
+              onClick={game.continueSession}
+              className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors mb-2"
+              data-testid="continue-session-button"
+            >
+              Continue Saved Game
+            </button>
+          </div>
+        )}
+        
         <div className="w-full max-w-xs space-y-4">
           <div>
             <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
@@ -69,7 +84,7 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord, onEndGame }) =>
           className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
           data-testid="start-button"
         >
-          Start Game
+          Start New Game
         </button>
       </div>
     );
@@ -205,6 +220,35 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord, onEndGame }) =>
           </div>
         </div>
         
+        {/* Session Statistics */}
+        <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-sm mt-2">
+          <h3 className="text-md font-semibold text-gray-700 mb-3">Session Statistics</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-2 bg-gray-50 rounded shadow-sm">
+              <p className="text-sm text-gray-500">Total Games</p>
+              <p className="text-xl font-bold text-gray-700" data-testid="total-games">{game.sessionStats.totalGames}</p>
+            </div>
+            <div className="text-center p-2 bg-gray-50 rounded shadow-sm">
+              <p className="text-sm text-gray-500">Average Score</p>
+              <p className="text-xl font-bold text-gray-700" data-testid="average-score">
+                {Math.round(game.sessionStats.averageScore)}
+              </p>
+            </div>
+            <div className="text-center p-2 bg-gray-50 rounded shadow-sm">
+              <p className="text-sm text-gray-500">Total Words Guessed</p>
+              <p className="text-xl font-bold text-gray-700" data-testid="total-words-guessed">
+                {game.sessionStats.totalWordsGuessed}
+              </p>
+            </div>
+            <div className="text-center p-2 bg-gray-50 rounded shadow-sm">
+              <p className="text-sm text-gray-500">Best Streak</p>
+              <p className="text-xl font-bold text-gray-700" data-testid="best-streak">
+                {game.sessionStats.bestStreak}
+              </p>
+            </div>
+          </div>
+        </div>
+        
         {/* Score History */}
         {game.scoreHistory.length > 0 && (
           <div className="w-full max-w-md mt-2">
@@ -255,18 +299,21 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord, onEndGame }) =>
           </div>
         )}
         
-        <button
-          onClick={game.resetGame}
-          className="mt-2 px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-          data-testid="new-game-button"
-        >
-          New Game
-        </button>
+        {/* Play Again Button */}
+        <div className="flex space-x-4 mt-4">
+          <button
+            onClick={game.startGame}
+            className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            data-testid="play-again-button"
+          >
+            Play Again
+          </button>
+        </div>
       </div>
     );
   }
   
-  // Fallback for any unhandled states
+  // Default fallback
   return null;
 };
 

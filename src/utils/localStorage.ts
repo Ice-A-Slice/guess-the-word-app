@@ -5,12 +5,14 @@ import { GameState } from '@/contexts/GameContext';
 
 // Keys for localStorage
 export const STORAGE_KEYS = {
+
   SESSION_STATE: 'guessTheWord_sessionState',
   SESSION_STATS: 'guessTheWord_sessionStats',
 };
 
 // Helper functions for checking if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
+
 
 /**
  * Save the current game state to localStorage
