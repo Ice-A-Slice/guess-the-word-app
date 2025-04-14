@@ -1,67 +1,34 @@
 'use client';
 
 import { Word } from '@/types';
+import { GameState } from '@/contexts/GameContext';
 
 // Keys for localStorage
 export const STORAGE_KEYS = {
-  SESSION_STATE: 'guesser-game-state',
-  SESSION_STATS: 'guesser-session-stats',
+  SESSION_STATE: 'guessTheWord_sessionState',
+  SESSION_STATS: 'guessTheWord_sessionStats',
 };
 
 // Helper functions for checking if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
 
 /**
- * Interface for the game state that we want to persist
- */
-export interface PersistedGameState {
-  status: 'idle' | 'active' | 'paused' | 'completed';
-  score: number;
-  wordsGuessed: number;
-  wordsSkipped: number;
-  currentStreak: number;
-  longestStreak: number;
-  difficulty: 'easy' | 'medium' | 'hard' | 'all';
-  maxSkipsPerGame: number;
-}
-
-/**
- * Interface for session statistics
- */
-export interface SessionStats {
-  totalGames: number;
-  highScore: number;
-  averageScore: number;
-  totalWordsGuessed: number;
-  totalWordsSkipped: number;
-  bestStreak: number;
-}
-
-/**
  * Save the current game state to localStorage
  */
-export function saveGameState(state: { 
-  status: 'idle' | 'active' | 'paused' | 'completed';
-  score: number;
-  wordsGuessed: number;
-  wordsSkipped: number;
-  currentStreak: number;
-  longestStreak: number;
-  skippedWords: Word[];
-  difficulty: 'easy' | 'medium' | 'hard' | 'all';
-  maxSkipsPerGame: number;
-}): void {
+export const saveGameState = (state: GameState): void => {
   if (!isBrowser) return;
   
   try {
-    // Only save the parts we want to persist
-    const stateToSave: PersistedGameState = {
+    // We don't need to save everything, just the important parts
+    const stateToSave = {
       status: state.status,
       score: state.score,
       wordsGuessed: state.wordsGuessed,
       wordsSkipped: state.wordsSkipped,
       currentStreak: state.currentStreak,
       longestStreak: state.longestStreak,
+      skippedWords: state.skippedWords,
+      scoreHistory: state.scoreHistory,
       difficulty: state.difficulty,
       maxSkipsPerGame: state.maxSkipsPerGame,
     };
@@ -70,12 +37,12 @@ export function saveGameState(state: {
   } catch (error) {
     console.error('Failed to save game state to localStorage:', error);
   }
-}
+};
 
 /**
- * Save session statistics to localStorage
+ * Save session statistics separately for long-term storage
  */
-export function saveSessionStats(sessionStats: SessionStats): void {
+export const saveSessionStats = (sessionStats: GameState['sessionStats']): void => {
   if (!isBrowser) return;
   
   try {
@@ -83,42 +50,46 @@ export function saveSessionStats(sessionStats: SessionStats): void {
   } catch (error) {
     console.error('Failed to save session stats to localStorage:', error);
   }
-}
+};
 
 /**
  * Load the saved game state from localStorage
  */
-export function loadGameState(): PersistedGameState | null {
+export const loadGameState = (): Partial<GameState> | null => {
   if (!isBrowser) return null;
   
   try {
     const savedState = localStorage.getItem(STORAGE_KEYS.SESSION_STATE);
-    return savedState ? JSON.parse(savedState) : null;
+    if (!savedState) return null;
+    
+    return JSON.parse(savedState);
   } catch (error) {
     console.error('Failed to load game state from localStorage:', error);
     return null;
   }
-}
+};
 
 /**
  * Load saved session statistics from localStorage
  */
-export function loadSessionStats(): SessionStats | null {
+export const loadSessionStats = (): GameState['sessionStats'] | null => {
   if (!isBrowser) return null;
   
   try {
     const savedStats = localStorage.getItem(STORAGE_KEYS.SESSION_STATS);
-    return savedStats ? JSON.parse(savedStats) : null;
+    if (!savedStats) return null;
+    
+    return JSON.parse(savedStats);
   } catch (error) {
     console.error('Failed to load session stats from localStorage:', error);
     return null;
   }
-}
+};
 
 /**
  * Clear the current game state from localStorage
  */
-export function clearGameState(): void {
+export const clearGameState = (): void => {
   if (!isBrowser) return;
   
   try {
@@ -126,13 +97,13 @@ export function clearGameState(): void {
   } catch (error) {
     console.error('Failed to clear game state from localStorage:', error);
   }
-}
+};
 
 /**
- * Check if a saved session exists
+ * Check if there's a saved game session
  */
-export function hasSavedSession(): boolean {
+export const hasSavedSession = (): boolean => {
   if (!isBrowser) return false;
   
   return !!localStorage.getItem(STORAGE_KEYS.SESSION_STATE);
-} 
+}; 
