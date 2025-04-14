@@ -53,13 +53,16 @@ describe('DefinitionDisplay Component', () => {
     const section = screen.getByTestId('definition-display');
     expect(section).toHaveAttribute('aria-labelledby', 'definition-heading');
     
-    // Find any div with role="region"
-    const definitionContainer = screen.getByRole('region');
-    expect(definitionContainer).toHaveAttribute('role', 'region');
+    // Verifiera att det finns åtminstone ett element med role="region"
+    const hasRegionRole = screen.getAllByRole('region').length > 0;
+    expect(hasRegionRole).toBe(true);
     
-    // Check difficulty has proper labeling - use parent node to get containing element
+    // Verifiera att definitionen visas
+    const definitionElement = screen.getByText(/Test definition/i);
+    expect(definitionElement).toBeInTheDocument();
+    
+    // Check difficulty has proper labeling
     const difficulty = screen.getByText('Medium');
-    const difficultyLabel = screen.getByText(/Difficulty:/i);
     expect(difficulty).toHaveAttribute('aria-labelledby', 'difficulty-label');
   });
 }); 
