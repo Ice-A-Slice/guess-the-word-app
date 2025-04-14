@@ -191,7 +191,7 @@
       "id": 7,
       "title": "Implement Skip Functionality",
       "description": "Add the ability for users to skip difficult words without penalty.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         6
       ],
