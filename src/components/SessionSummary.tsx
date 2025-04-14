@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameState } from '@/hooks/useGame';
 
 interface SessionSummaryProps {
@@ -8,6 +8,7 @@ interface SessionSummaryProps {
 const SessionSummary: React.FC<SessionSummaryProps> = ({ onStartNewGame }) => {
   const game = useGameState();
   const { sessionStats } = game;
+  const [showSkippedWords, setShowSkippedWords] = useState(false);
   
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-auto animate-fade-in">
@@ -35,6 +36,47 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({ onStartNewGame }) => {
           <span className="text-gray-600">Words Skipped</span>
           <span className="font-semibold">{game.wordsSkipped}</span>
         </div>
+        
+        {/* Skipped Words Section */}
+        {game.skippedWords.length > 0 && (
+          <div className="mt-2 pt-2">
+            <button 
+              onClick={() => setShowSkippedWords(!showSkippedWords)}
+              className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center w-full justify-between font-medium"
+              aria-expanded={showSkippedWords}
+            >
+              <span>
+                {showSkippedWords ? 'Hide' : 'Show'} skipped words
+              </span>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className={`h-4 w-4 transition-transform ${showSkippedWords ? 'rotate-180' : ''}`}
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {showSkippedWords && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-md text-sm animate-slide-down">
+                <h4 className="font-medium mb-2 text-gray-700">Words you skipped:</h4>
+                <ul className="space-y-2">
+                  {game.skippedWords.map((word, index) => (
+                    <li key={`${word.id}-${index}`} className="pb-2 border-b border-gray-200 last:border-0">
+                      <span className="font-medium text-indigo-700">{word.word}</span>
+                      <p className="text-gray-600 text-xs mt-1">{word.definition}</p>
+                      <span className="inline-block mt-1 px-2 py-1 bg-gray-200 rounded-full text-xs text-gray-700">
+                        {word.difficulty}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="bg-indigo-50 rounded-lg p-4 mb-6">
