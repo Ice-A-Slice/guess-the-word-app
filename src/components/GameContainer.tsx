@@ -3,6 +3,9 @@ import { useGameWithWordSelection } from '@/hooks';
 import GameControls from './GameControls';
 import GuessForm from './GuessForm';
 import ScoreAnimation from './ScoreAnimation';
+import { FeedbackMessage } from './FeedbackMessage';
+import { DefinitionDisplay } from './DefinitionDisplay/DefinitionDisplay';
+import SessionSummary from './SessionSummary';
 
 const GameContainer: React.FC = () => {
   const game = useGameWithWordSelection();
@@ -11,10 +14,14 @@ const GameContainer: React.FC = () => {
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [lastScorePoints, setLastScorePoints] = useState(0);
   const [lastScoreDifficulty, setLastScoreDifficulty] = useState('');
+  const [wordTransition, setWordTransition] = useState(false);
   
   // Handler for correct guesses
   const handleCorrectGuess = (hintsUsed: number) => {
     if (!game.currentWord) return;
+    
+    // Trigger word transition animation
+    setWordTransition(true);
     
     // Calculate base points based on hints used (less hints = more points)
     const basePoints = Math.max(1, 3 - hintsUsed);
@@ -46,6 +53,11 @@ const GameContainer: React.FC = () => {
       setShowScoreAnimation(false);
     }, 1500);
     
+    // Reset word transition after a delay
+    setTimeout(() => {
+      setWordTransition(false);
+    }, 300);
+    
     // Pass both points and word to the action
     game.handleCorrectGuess(totalPoints, game.currentWord);
   };
@@ -53,6 +65,9 @@ const GameContainer: React.FC = () => {
   // Enhanced skip handler with visual feedback
   const handleSkipWord = () => {
     if (game.currentWord) {
+      // Trigger word transition animation
+      setWordTransition(true);
+      
       setSkippedWord(game.currentWord.word);
       setShowSkipMessage(true);
       
@@ -60,6 +75,11 @@ const GameContainer: React.FC = () => {
       setTimeout(() => {
         setShowSkipMessage(false);
       }, 2000);
+      
+      // Reset word transition after a delay
+      setTimeout(() => {
+        setWordTransition(false);
+      }, 300);
       
       // Skip the word
       game.handleSkipWord();
@@ -73,9 +93,20 @@ const GameContainer: React.FC = () => {
   
   // Render the main game content based on game status
   const renderGameContent = () => {
+    if (game.status === 'completed') {
+      return (
+        <SessionSummary 
+          onStartNewGame={() => {
+            game.resetGame();
+            game.startGame();
+          }}
+        />
+      );
+    }
+    
     if (!game.currentWord) {
       return (
-        <div className="text-center p-8 bg-gray-100 rounded-lg">
+        <div className="text-center p-8 bg-gray-100 rounded-lg animate-pulse-gentle">
           <p className="text-gray-500">Loading words...</p>
         </div>
       );
@@ -95,35 +126,34 @@ const GameContainer: React.FC = () => {
         
         {/* Skip Feedback Message */}
         {showSkipMessage && skippedWord && (
-          <div className="skip-feedback">
-            <p>
-              Skipped word: <span className="word">{skippedWord}</span>
-            </p>
+          <div className="w-full mb-4 animate-slide-in-right">
+            <FeedbackMessage
+              type="info"
+              message={`Skipped word: "${skippedWord}"`}
+              id="skip-feedback"
+            />
           </div>
         )}
         
         {/* Definition Display */}
-        <div className="mb-8 p-6 bg-white rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium text-gray-700 mb-2">Definition:</h3>
-          <p className="text-xl" data-testid="word-definition">
-            {game.currentWord.definition}
-          </p>
-          
-          {game.status === 'active' && (
-            <div className="mt-4 text-sm text-gray-500">
-              <p>Difficulty: <span className="font-medium">{game.currentWord.difficulty}</span></p>
-            </div>
-          )}
+        <div className={`transition-all duration-300 ${wordTransition ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+          <DefinitionDisplay 
+            definition={game.currentWord.definition}
+            difficulty={game.currentWord.difficulty}
+            animate={!wordTransition}
+          />
         </div>
         
         {/* Guess Form - only shown in active state */}
         {game.status === 'active' && (
-          <GuessForm
-            targetWord={game.currentWord}
-            onCorrectGuess={handleCorrectGuess}
-            hintsUsed={0} // To be implemented with hints feature
-            disableInput={game.status !== 'active'}
-          />
+          <div className={`transition-all duration-300 ${wordTransition ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+            <GuessForm
+              targetWord={game.currentWord}
+              onCorrectGuess={handleCorrectGuess}
+              hintsUsed={0} // To be implemented with hints feature
+              disableInput={game.status !== 'active'}
+            />
+          </div>
         )}
       </div>
     );
@@ -131,11 +161,28 @@ const GameContainer: React.FC = () => {
   
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      {/* Game Controls */}
-      <GameControls onSkipWord={handleSkipWord} />
+      {/* Game Controls - only show if game is active or paused */}
+      {(game.status === 'active' || game.status === 'paused') && (
+        <GameControls 
+          onSkipWord={handleSkipWord} 
+          onEndGame={() => game.endGame()}
+        />
+      )}
       
       {/* Only render game content if we're not in idle state */}
       {game.status !== 'idle' && renderGameContent()}
+      
+      {/* Show start game button in idle state */}
+      {game.status === 'idle' && (
+        <div className="text-center py-10">
+          <button
+            onClick={() => game.startGame()}
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300"
+          >
+            Start Game
+          </button>
+        </div>
+      )}
     </div>
   );
 };
