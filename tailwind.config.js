@@ -82,6 +82,37 @@ module.exports = {
         "bounce-gentle": {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
+        },
+        "score-float": {
+          "0%": { opacity: 0, transform: "translateY(20px)" },
+          "20%": { opacity: 1, transform: "translateY(-5px)" },
+          "80%": { opacity: 1 },
+          "100%": { opacity: 0, transform: "translateY(-30px)" }
+        },
+        "fade-in": {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 }
+        },
+        "fade-out": {
+          "0%": { opacity: 1 },
+          "100%": { opacity: 0 }
+        },
+        "slide-in-right": {
+          "0%": { transform: "translateX(100%)", opacity: 0 },
+          "100%": { transform: "translateX(0)", opacity: 1 }
+        },
+        "slide-in-left": {
+          "0%": { transform: "translateX(-100%)", opacity: 0 },
+          "100%": { transform: "translateX(0)", opacity: 1 }
+        },
+        "scale-in": {
+          "0%": { transform: "scale(0.9)", opacity: 0 },
+          "100%": { transform: "scale(1)", opacity: 1 }
+        },
+        "shake": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "20%, 60%": { transform: "translateX(-5px)" },
+          "40%, 80%": { transform: "translateX(5px)" }
         }
       },
       animation: {
@@ -89,6 +120,13 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-gentle": "pulse-gentle 2s ease-in-out infinite",
         "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
+        "score-float": "score-float 1.5s ease-out forwards",
+        "fade-in": "fade-in 0.3s ease-out",
+        "fade-out": "fade-out 0.3s ease-out",
+        "slide-in-right": "slide-in-right 0.3s ease-out",
+        "slide-in-left": "slide-in-left 0.3s ease-out",
+        "scale-in": "scale-in 0.3s ease-out",
+        "shake": "shake 0.5s ease-in-out"
       },
     },
   },

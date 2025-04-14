@@ -6,13 +6,17 @@ type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 
 interface GameControlsProps {
   onSkipWord?: () => void;
+  onEndGame?: () => void;
 }
 
-const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
+const GameControls: React.FC<GameControlsProps> = ({ onSkipWord, onEndGame }) => {
   const game = useGameWithWordSelection();
   
   // Use custom skip handler if provided, otherwise use the default one
   const handleSkipWord = onSkipWord || game.handleSkipWord;
+  
+  // Use custom end game handler if provided, otherwise use the default one
+  const handleEndGame = onEndGame || game.endGame;
   
   // Render different controls based on game status
   if (game.status === 'idle') {
@@ -136,7 +140,7 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
           </button>
           
           <button
-            onClick={game.endGame}
+            onClick={handleEndGame}
             className="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
             data-testid="end-button"
           >
@@ -163,7 +167,7 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
           </button>
           
           <button
-            onClick={game.endGame}
+            onClick={handleEndGame}
             className="px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
             data-testid="end-game-button"
           >

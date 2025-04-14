@@ -199,4 +199,61 @@ describe('GameControls', () => {
     fireEvent.click(screen.getByTestId('new-game-button'));
     expect(mockGameHook.resetGame).toHaveBeenCalled();
   });
+  
+  test('uses custom onSkipWord handler when provided', () => {
+    (gameHooks.useGameWithWordSelection as jest.Mock).mockReturnValue({
+      ...mockGameHook,
+      status: 'active',
+    });
+    
+    const mockSkipHandler = jest.fn();
+    
+    render(
+      <GameProvider>
+        <GameControls onSkipWord={mockSkipHandler} />
+      </GameProvider>
+    );
+    
+    fireEvent.click(screen.getByTestId('skip-button'));
+    expect(mockSkipHandler).toHaveBeenCalled();
+    expect(mockGameHook.handleSkipWord).not.toHaveBeenCalled();
+  });
+  
+  test('uses custom onEndGame handler when provided', () => {
+    (gameHooks.useGameWithWordSelection as jest.Mock).mockReturnValue({
+      ...mockGameHook,
+      status: 'active',
+    });
+    
+    const mockEndGameHandler = jest.fn();
+    
+    render(
+      <GameProvider>
+        <GameControls onEndGame={mockEndGameHandler} />
+      </GameProvider>
+    );
+    
+    fireEvent.click(screen.getByTestId('end-button'));
+    expect(mockEndGameHandler).toHaveBeenCalled();
+    expect(mockGameHook.endGame).not.toHaveBeenCalled();
+  });
+  
+  test('uses custom onEndGame handler in paused state', () => {
+    (gameHooks.useGameWithWordSelection as jest.Mock).mockReturnValue({
+      ...mockGameHook,
+      status: 'paused',
+    });
+    
+    const mockEndGameHandler = jest.fn();
+    
+    render(
+      <GameProvider>
+        <GameControls onEndGame={mockEndGameHandler} />
+      </GameProvider>
+    );
+    
+    fireEvent.click(screen.getByTestId('end-game-button'));
+    expect(mockEndGameHandler).toHaveBeenCalled();
+    expect(mockGameHook.endGame).not.toHaveBeenCalled();
+  });
 }); 
