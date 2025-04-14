@@ -1,7 +1,15 @@
 'use client';
 
-import React, { createContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useReducer, ReactNode, useEffect } from 'react';
 import { Word } from '@/types';
+import {
+  saveGameState,
+  saveSessionStats,
+  loadGameState,
+  loadSessionStats,
+  clearGameState,
+  hasSavedSession
+} from '@/utils/localStorage';
 
 // Game State Interface
 export interface GameState {
@@ -44,6 +52,9 @@ export interface GameState {
   
   // User preferences
   difficulty: 'easy' | 'medium' | 'hard' | 'all';
+  
+  // Session management
+  hasSavedSession: boolean;
 }
 
 // Game Actions
@@ -57,7 +68,10 @@ export type GameAction =
   | { type: 'SKIP_WORD' }
   | { type: 'SET_DIFFICULTY'; payload: 'easy' | 'medium' | 'hard' | 'all' }
   | { type: 'SET_MAX_SKIPS'; payload: number }
-  | { type: 'RESET_GAME' };
+  | { type: 'RESET_GAME' }
+  | { type: 'LOAD_SAVED_STATE'; payload: Partial<GameState> }
+  | { type: 'CONTINUE_SESSION' }
+  | { type: 'LOAD_SESSION_STATS'; payload: GameState['sessionStats'] };
 
 // Initial state
 const initialState: GameState = {
@@ -80,12 +94,15 @@ const initialState: GameState = {
   },
   maxSkipsPerGame: 5, // Default value
   difficulty: 'all',
+  hasSavedSession: false,
 };
 
 // Reducer function
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME':
+      // Clear any existing session when starting a new game
+      clearGameState();
       return {
         ...state,
         status: 'active',
@@ -96,6 +113,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         longestStreak: 0,
         skippedWords: [],
         scoreHistory: [],
+        hasSavedSession: false,
       };
       
     case 'PAUSE_GAME':
@@ -118,17 +136,26 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const averageScore = (state.sessionStats.averageScore * (totalGames - 1) + state.score) / totalGames;
       const bestStreak = Math.max(state.sessionStats.bestStreak, state.longestStreak);
       
+      const updatedSessionStats = {
+        totalGames,
+        highScore,
+        averageScore,
+        totalWordsGuessed,
+        totalWordsSkipped,
+        bestStreak
+      };
+      
+      // Save session stats to localStorage
+      saveSessionStats(updatedSessionStats);
+      
+      // Clear the current game state
+      clearGameState();
+      
       return {
         ...state,
         status: 'completed',
-        sessionStats: {
-          totalGames,
-          highScore,
-          averageScore,
-          totalWordsGuessed,
-          totalWordsSkipped,
-          bestStreak
-        },
+        sessionStats: updatedSessionStats,
+        hasSavedSession: false,
       };
     }
       
@@ -151,7 +178,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         timestamp: Date.now()
       };
       
-      return {
+      const newState = {
         ...state,
         score: state.score + action.payload.points,
         wordsGuessed: state.wordsGuessed + 1,
@@ -159,10 +186,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         longestStreak: newLongestStreak,
         scoreHistory: [...state.scoreHistory, scoreEntry]
       };
+      
+      // Save state to localStorage whenever it changes
+      saveGameState(newState);
+      
+      return newState;
     }
       
-    case 'SKIP_WORD':
-      return {
+    case 'SKIP_WORD': {
+      const newState = {
         ...state,
         wordsSkipped: state.wordsSkipped + 1,
         currentStreak: 0, // Reset streak on skip
@@ -170,6 +202,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ? [...state.skippedWords, state.currentWord]
           : state.skippedWords,
       };
+      
+      // Save state to localStorage whenever it changes
+      saveGameState(newState);
+      
+      return newState;
+    }
       
     case 'SET_DIFFICULTY':
       return {
@@ -184,9 +222,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
       
     case 'RESET_GAME':
+      // Clear local storage when resetting the game
+      clearGameState();
       return {
         ...initialState,
         sessionStats: state.sessionStats, // Preserve session stats
+        hasSavedSession: false,
+      };
+    
+    case 'LOAD_SAVED_STATE':
+      return {
+        ...state,
+        ...action.payload,
+        hasSavedSession: false, // Reset after loading
+      };
+      
+    case 'CONTINUE_SESSION':
+      return {
+        ...state,
+        status: 'active',
+        hasSavedSession: false,
+      };
+      
+    case 'LOAD_SESSION_STATS':
+      return {
+        ...state,
+        sessionStats: action.payload,
       };
       
     default:
@@ -205,6 +266,31 @@ interface GameProviderProps {
 
 export function GameProvider({ children }: GameProviderProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  
+  // Check for saved session on mount
+  useEffect(() => {
+    // First, try to load session stats if available
+    const savedStats = loadSessionStats();
+    if (savedStats) {
+      dispatch({ type: 'LOAD_SESSION_STATS', payload: savedStats });
+    }
+    
+    // Then check if we have a saved game state
+    const savedSession = hasSavedSession();
+    if (savedSession) {
+      const savedState = loadGameState();
+      if (savedState) {
+        dispatch({ 
+          type: 'LOAD_SAVED_STATE', 
+          payload: { 
+            ...savedState, 
+            status: 'paused', // Always load in paused state
+            hasSavedSession: true // Mark that we have a saved session
+          } 
+        });
+      }
+    }
+  }, []);
   
   return (
     <GameStateContext.Provider value={state}>
