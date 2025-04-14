@@ -1,6 +1,5 @@
 'use client';
 
-import { Word } from '@/types';
 import { GameState } from '@/contexts/GameContext';
 
 // Keys for localStorage
@@ -29,8 +28,6 @@ export const saveGameState = (state: GameState): void => {
       wordsSkipped: number;
       currentStreak: number;
       longestStreak: number;
-      skippedWords: Word[];
-      scoreHistory: GameState['scoreHistory'];
       difficulty: GameState['difficulty'];
       maxSkipsPerGame: number;
     } = {
@@ -40,8 +37,6 @@ export const saveGameState = (state: GameState): void => {
       wordsSkipped: state.wordsSkipped,
       currentStreak: state.currentStreak,
       longestStreak: state.longestStreak,
-      skippedWords: state.skippedWords,
-      scoreHistory: state.scoreHistory,
       difficulty: state.difficulty,
       maxSkipsPerGame: state.maxSkipsPerGame,
     };
