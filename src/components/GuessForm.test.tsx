@@ -1,7 +1,10 @@
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, fireEvent, screen, act } from '@testing-library/react';
 import GuessForm from './GuessForm';
 import { wordService } from '@/services';
+
+// Mock setTimeout
+jest.useFakeTimers();
 
 // Mock the wordService
 jest.mock('@/services', () => ({
@@ -122,7 +125,12 @@ describe('GuessForm', () => {
     fireEvent.change(input, { target: { value: 'example' } });
     
     const button = screen.getByTestId('submit-guess');
-    fireEvent.click(button);
+    
+    act(() => {
+      fireEvent.click(button);
+      // Vi måste vänta på att setTimeout i komponenten körs
+      jest.advanceTimersByTime(300);
+    });
     
     expect(onCorrectGuessMock).toHaveBeenCalledWith(2);
     expect(input).toHaveValue(''); // Input cleared after correct guess
@@ -147,12 +155,18 @@ describe('GuessForm', () => {
     fireEvent.change(input, { target: { value: 'exampl' } });
     
     const button = screen.getByTestId('submit-guess');
-    fireEvent.click(button);
+    
+    act(() => {
+      fireEvent.click(button);
+      jest.advanceTimersByTime(300);
+    });
     
     const feedback = screen.getByTestId('guess-feedback');
     expect(feedback).toBeInTheDocument();
-    expect(feedback).toHaveTextContent('Almost!');
-    expect(feedback).toHaveTextContent('example');
+    expect(feedback).toHaveTextContent(/Almost!/i);
+    expect(feedback).toHaveTextContent(targetWord.word);
+    
+    expect(onCorrectGuessMock).toHaveBeenCalledWith(1);
   });
   
   test('handles long inputs correctly', () => {
@@ -169,7 +183,10 @@ describe('GuessForm', () => {
     fireEvent.change(input, { target: { value: longInput } });
     
     const button = screen.getByTestId('submit-guess');
-    fireEvent.click(button);
+    
+    act(() => {
+      fireEvent.click(button);
+    });
     
     expect(wordService.validateGuess).toHaveBeenCalledWith(longInput, targetWord);
   });

@@ -98,10 +98,11 @@ const initialState: GameState = {
 };
 
 // Reducer function
-function gameReducer(state: GameState, action: GameAction): GameState {
+export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME':
-      // Clear any existing session when starting a new game
+
+      // Clear any existing game state before starting a new game
       clearGameState();
       return {
         ...state,
@@ -265,7 +266,34 @@ interface GameProviderProps {
 }
 
 export function GameProvider({ children }: GameProviderProps) {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  // Initialize with saved state if available
+  const getInitialState = (): GameState => {
+    if (hasSavedSession()) {
+      const savedState = loadGameState();
+      const savedStats = loadSessionStats();
+      
+      if (savedState) {
+        return {
+          ...initialState,
+          ...savedState,
+          sessionStats: savedStats || initialState.sessionStats,
+        };
+      }
+    }
+    
+    return initialState;
+  };
+  
+  const [state, dispatch] = useReducer(gameReducer, getInitialState());
+  
+  // Save state changes to localStorage
+  useEffect(() => {
+    // Don't save state during initial render
+    if (state !== initialState) {
+      saveGameState(state);
+      saveSessionStats(state.sessionStats);
+    }
+  }, [state]);
   
   // Check for saved session on mount
   useEffect(() => {

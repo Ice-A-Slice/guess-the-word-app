@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { GameProvider } from './GameContext';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { GameProvider, GameStateContext, GameDispatchContext } from './GameContext';
 import { useGameState, useGameDispatch } from '@/hooks/useGame';
 import { Word } from '@/types';
+import * as localStorage from '@/utils/localStorage';
 
 // Mock word object to use in tests
 const mockWord: Word = {
@@ -64,6 +65,42 @@ const setup = () => {
     <GameProvider>
       <TestComponent />
     </GameProvider>
+  );
+};
+
+// Mock localStorage utilities
+jest.mock('@/utils/localStorage', () => ({
+  saveGameState: jest.fn(),
+  saveSessionStats: jest.fn(),
+  loadGameState: jest.fn(),
+  loadSessionStats: jest.fn(),
+  hasSavedSession: jest.fn(),
+  clearGameState: jest.fn(),
+}));
+
+// Test component to access context values
+const TestConsumer = () => {
+  const state = React.useContext(GameStateContext);
+  const dispatch = React.useContext(GameDispatchContext);
+  
+  // Expose context values for testing
+  return (
+    <div>
+      <div data-testid="status">{state?.status}</div>
+      <div data-testid="score">{state?.score}</div>
+      <button 
+        data-testid="start-game" 
+        onClick={() => dispatch?.({ type: 'START_GAME' })}
+      >
+        Start Game
+      </button>
+      <button 
+        data-testid="end-game" 
+        onClick={() => dispatch?.({ type: 'END_GAME' })}
+      >
+        End Game
+      </button>
+    </div>
   );
 };
 
@@ -134,5 +171,97 @@ describe('GameContext', () => {
     
     // Check that score increased
     expect(screen.getByTestId('score').textContent).toBe('2');
+  });
+});
+
+describe('GameProvider with localStorage integration', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (localStorage.hasSavedSession as jest.Mock).mockReturnValue(false);
+  });
+  
+  test('initializes with default state when no saved session exists', () => {
+    const { getByTestId } = render(
+      <GameProvider>
+        <TestConsumer />
+      </GameProvider>
+    );
+    
+    expect(getByTestId('status').textContent).toBe('idle');
+    expect(getByTestId('score').textContent).toBe('0');
+    expect(localStorage.hasSavedSession).toHaveBeenCalled();
+  });
+  
+  test('loads saved state when saved session exists', () => {
+    (localStorage.hasSavedSession as jest.Mock).mockReturnValue(true);
+    (localStorage.loadGameState as jest.Mock).mockReturnValue({
+      status: 'active',
+      score: 15,
+      wordsGuessed: 5,
+    });
+    
+    const { getByTestId } = render(
+      <GameProvider>
+        <TestConsumer />
+      </GameProvider>
+    );
+    
+    expect(getByTestId('status').textContent).toBe('paused');
+    expect(getByTestId('score').textContent).toBe('15');
+    expect(localStorage.hasSavedSession).toHaveBeenCalled();
+    expect(localStorage.loadGameState).toHaveBeenCalled();
+  });
+  
+  test('saves state changes to localStorage', () => {
+    (localStorage.hasSavedSession as jest.Mock).mockReturnValue(false);
+    (localStorage.loadSessionStats as jest.Mock).mockReturnValue({
+      totalGames: 2,
+      highScore: 25,
+      averageScore: 20,
+      totalWordsGuessed: 10,
+      totalWordsSkipped: 5,
+      bestStreak: 4
+    });
+    
+    const { getByTestId } = render(
+      <GameProvider>
+        <TestConsumer />
+      </GameProvider>
+    );
+    
+    // Reset mock calls before our actual test
+    jest.clearAllMocks();
+    
+    // Dispatch an action to change state
+    act(() => {
+      getByTestId('start-game').click();
+    });
+    
+    // Should trigger a save
+    expect(localStorage.saveGameState).toHaveBeenCalled();
+  });
+  
+  test('updates sessionStats when ending a game', () => {
+    const { getByTestId } = render(
+      <GameProvider>
+        <TestConsumer />
+      </GameProvider>
+    );
+    
+    // Reset mock calls before our actual test
+    jest.clearAllMocks();
+    
+    // Start game then end it
+    act(() => {
+      getByTestId('start-game').click();
+    });
+    
+    // End the game
+    act(() => {
+      getByTestId('end-game').click();
+    });
+    
+    // Should update session stats
+    expect(localStorage.saveSessionStats).toHaveBeenCalled();
   });
 }); 

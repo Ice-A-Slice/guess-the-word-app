@@ -3,6 +3,7 @@
  */
 
 import {
+  STORAGE_KEYS,
   saveGameState,
   saveSessionStats,
   loadGameState,
@@ -10,7 +11,6 @@ import {
   clearGameState,
   hasSavedSession
 } from './localStorage';
-import { GameState } from '@/contexts/GameContext';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -26,6 +26,8 @@ const localStorageMock = (() => {
     clear: jest.fn(() => {
       store = {};
     }),
+    store, // Expose store for testing
+
   };
 })();
 
@@ -39,131 +41,108 @@ beforeEach(() => {
 });
 
 // Sample game state for testing
-const sampleGameState: Partial<GameState> = {
-  status: 'active',
-  currentWord: {
-    id: '1',
-    word: 'test',
-    definition: 'A procedure for critical evaluation',
-    difficulty: 'easy',
-  },
+const sampleGameState = {
+  status: 'active' as 'idle' | 'active' | 'paused' | 'completed',
   score: 10,
   wordsGuessed: 5,
   wordsSkipped: 2,
   currentStreak: 3,
-  longestStreak: 3,
-  skippedWords: [
-    {
-      id: '2',
-      word: 'skipped',
-      definition: 'Jumped over or omitted',
-      difficulty: 'medium',
-    }
-  ],
-  scoreHistory: [
-    {
-      word: 'apple',
-      pointsEarned: 2,
-      difficulty: 'easy',
-      timestamp: 1619712000000,
-    }
-  ],
-  sessionStats: {
-    totalGames: 1,
-    highScore: 10,
-    averageScore: 10,
-    totalWordsGuessed: 5,
-    totalWordsSkipped: 2,
-    bestStreak: 3,
-  },
+  longestStreak: 5,
+  difficulty: 'medium' as 'easy' | 'medium' | 'hard' | 'all',
   maxSkipsPerGame: 5,
-  difficulty: 'all',
-  hasSavedSession: true,
+};
+
+// Sample session stats for testing
+const sampleSessionStats = {
+  totalGames: 5,
+  highScore: 25,
+  averageScore: 15,
+  totalWordsGuessed: 30,
+  totalWordsSkipped: 10,
+  bestStreak: 8,
 };
 
 describe('localStorage utilities', () => {
   test('saveGameState saves state to localStorage', () => {
-    saveGameState(sampleGameState as GameState);
+    saveGameState(sampleGameState);
     
     expect(localStorageMock.setItem).toHaveBeenCalled();
-    expect(JSON.parse(localStorageMock.setItem.mock.calls[0][1])).toEqual(
-      expect.objectContaining({
-        status: 'active',
-        score: 10,
-        wordsGuessed: 5,
-      })
-    );
+    expect(JSON.parse(localStorageMock.setItem.mock.calls[0][1])).toEqual({
+      status: 'active',
+      score: 10,
+      wordsGuessed: 5,
+      wordsSkipped: 2,
+      currentStreak: 3,
+      longestStreak: 5,
+      difficulty: 'medium',
+      maxSkipsPerGame: 5,
+    });
   });
   
   test('saveSessionStats saves session stats to localStorage', () => {
-    saveSessionStats(sampleGameState.sessionStats!);
+    saveSessionStats(sampleSessionStats);
     
     expect(localStorageMock.setItem).toHaveBeenCalled();
     expect(JSON.parse(localStorageMock.setItem.mock.calls[0][1])).toEqual(
-      expect.objectContaining({
-        totalGames: 1,
-        highScore: 10,
-        averageScore: 10,
-      })
+      sampleSessionStats
     );
   });
   
   test('loadGameState loads saved state from localStorage', () => {
-    saveGameState(sampleGameState as GameState);
+
+    // First save some state
+    localStorageMock.setItem(STORAGE_KEYS.SESSION_STATE, JSON.stringify(sampleGameState));
+    
     const loadedState = loadGameState();
     
-    expect(loadedState).toEqual(
-      expect.objectContaining({
-        status: 'active',
-        score: 10,
-        wordsGuessed: 5,
-      })
-    );
+    expect(loadedState).toEqual(sampleGameState);
   });
   
   test('loadSessionStats loads saved session stats from localStorage', () => {
-    saveSessionStats(sampleGameState.sessionStats!);
+    // First save some stats
+    localStorageMock.setItem(STORAGE_KEYS.SESSION_STATS, JSON.stringify(sampleSessionStats));
+    
     const loadedStats = loadSessionStats();
     
-    expect(loadedStats).toEqual(
-      expect.objectContaining({
-        totalGames: 1,
-        highScore: 10,
-        averageScore: 10,
-      })
-    );
+    expect(loadedStats).toEqual(sampleSessionStats);
   });
   
   test('clearGameState removes game state from localStorage', () => {
-    saveGameState(sampleGameState as GameState);
+    // First save some state
+    localStorageMock.setItem(STORAGE_KEYS.SESSION_STATE, JSON.stringify(sampleGameState));
+    
     clearGameState();
     
     expect(localStorageMock.removeItem).toHaveBeenCalled();
-    expect(loadGameState()).toBeNull();
+    expect(localStorageMock.removeItem).toHaveBeenCalledWith(STORAGE_KEYS.SESSION_STATE);
   });
   
-  test('hasSavedSession checks if there is a saved session', () => {
-    expect(hasSavedSession()).toBe(false);
+  test('hasSavedSession returns true when session exists', () => {
+    localStorageMock.setItem(STORAGE_KEYS.SESSION_STATE, JSON.stringify(sampleGameState));
     
-    saveGameState(sampleGameState as GameState);
     expect(hasSavedSession()).toBe(true);
-    
-    clearGameState();
+  });
+  
+  test('hasSavedSession returns false when no session exists', () => {
     expect(hasSavedSession()).toBe(false);
   });
   
   test('handles localStorage errors gracefully', () => {
-    // Mock an error when setting an item
-    const errorMock = jest.spyOn(console, 'error').mockImplementation();
+    // Mock a localStorage error
+    const originalConsoleError = console.error;
+    console.error = jest.fn();
+    
     localStorageMock.setItem.mockImplementation(() => {
       throw new Error('Storage error');
     });
     
-    // These should not throw errors, just log them
-    expect(() => saveGameState(sampleGameState as GameState)).not.toThrow();
-    expect(() => saveSessionStats(sampleGameState.sessionStats!)).not.toThrow();
+    // These should not throw errors
+    saveGameState(sampleGameState);
+    saveSessionStats(sampleSessionStats);
     
-    expect(errorMock).toHaveBeenCalledTimes(2);
-    errorMock.mockRestore();
+    expect(console.error).toHaveBeenCalledTimes(2);
+    
+    // Restore console.error
+    console.error = originalConsoleError;
   });
 }); 
