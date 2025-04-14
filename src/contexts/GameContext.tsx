@@ -7,6 +7,7 @@ import {
   saveSessionStats, 
   loadGameState, 
   loadSessionStats, 
+  clearGameState,
   hasSavedSession 
 } from '@/utils/localStorage';
 
