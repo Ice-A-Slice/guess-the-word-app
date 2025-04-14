@@ -36,15 +36,37 @@ const ScoreAnimation: React.FC<ScoreAnimationProps> = ({
     }
   };
   
+  // Determine size based on points
+  const getSize = () => {
+    if (points >= 5) return 'text-3xl';
+    if (points >= 3) return 'text-2xl';
+    return 'text-xl';
+  };
+
+  // Icon based on difficulty
+  const getIcon = () => {
+    switch(difficulty) {
+      case 'easy': return '🌱';
+      case 'medium': return '🔥';
+      case 'hard': return '⭐';
+      default: return '✓';
+    }
+  };
+  
   return (
-    <div className="score-animation">
-      <div className={`text-xl font-bold ${getColor()} animate-score-float`}>
-        +{points} points!
-        {hasStreak && (
-          <span className="ml-1 text-orange-500">
-            🔥 {streakCount} streak
+    <div className="fixed top-1/4 inset-x-0 flex justify-center items-center z-50">
+      <div className={`${getSize()} font-bold ${getColor()} animate-score-float`}>
+        <span className="flex items-center justify-center whitespace-nowrap">
+          <span className="mr-1">{getIcon()}</span>
+          <span className="bg-white bg-opacity-95 px-3 py-1 rounded-full shadow-lg border border-gray-200">
+            +{points} points!
+            {hasStreak && (
+              <span className="ml-2 text-orange-500 inline-flex items-center">
+                🔥 <span className="ml-1 font-bold">{streakCount}x</span> streak
+              </span>
+            )}
           </span>
-        )}
+        </span>
       </div>
     </div>
   );
