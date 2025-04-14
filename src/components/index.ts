@@ -10,6 +10,7 @@ export { FeedbackMessage } from './FeedbackMessage/FeedbackMessage';
 export type { MessageType } from './FeedbackMessage/FeedbackMessage';
 export { Header } from './Header/Header';
 export { default as SessionSummary } from './SessionSummary';
+export { Settings } from './Settings';
 
 // Export future components here
 // Example: export { Button } from './Button/Button';
