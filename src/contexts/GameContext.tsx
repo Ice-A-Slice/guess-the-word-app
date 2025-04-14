@@ -15,9 +15,19 @@ export interface GameState {
   score: number;
   wordsGuessed: number;
   wordsSkipped: number;
+  currentStreak: number;
+  longestStreak: number;
   
   // Track skipped words in current session
   skippedWords: Word[];
+  
+  // Track scoring history
+  scoreHistory: {
+    word: string;
+    pointsEarned: number;
+    difficulty: string;
+    timestamp: number;
+  }[];
   
   // Session statistics
   sessionStats: {
@@ -26,6 +36,7 @@ export interface GameState {
     averageScore: number;
     totalWordsGuessed: number;
     totalWordsSkipped: number;
+    bestStreak: number;
   };
   
   // Game settings
@@ -42,7 +53,7 @@ export type GameAction =
   | { type: 'RESUME_GAME' }
   | { type: 'END_GAME' }
   | { type: 'SET_WORD'; payload: Word }
-  | { type: 'CORRECT_GUESS'; payload: { points: number } }
+  | { type: 'CORRECT_GUESS'; payload: { points: number; word: Word } }
   | { type: 'SKIP_WORD' }
   | { type: 'SET_DIFFICULTY'; payload: 'easy' | 'medium' | 'hard' | 'all' }
   | { type: 'SET_MAX_SKIPS'; payload: number }
@@ -55,13 +66,17 @@ const initialState: GameState = {
   score: 0,
   wordsGuessed: 0,
   wordsSkipped: 0,
+  currentStreak: 0,
+  longestStreak: 0,
   skippedWords: [],
+  scoreHistory: [],
   sessionStats: {
     totalGames: 0,
     highScore: 0,
     averageScore: 0,
     totalWordsGuessed: 0,
     totalWordsSkipped: 0,
+    bestStreak: 0
   },
   maxSkipsPerGame: 5, // Default value
   difficulty: 'all',
@@ -77,7 +92,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         score: 0,
         wordsGuessed: 0,
         wordsSkipped: 0,
+        currentStreak: 0,
+        longestStreak: 0,
         skippedWords: [],
+        scoreHistory: [],
       };
       
     case 'PAUSE_GAME':
@@ -98,6 +116,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const totalWordsSkipped = state.sessionStats.totalWordsSkipped + state.wordsSkipped;
       const highScore = Math.max(state.sessionStats.highScore, state.score);
       const averageScore = (state.sessionStats.averageScore * (totalGames - 1) + state.score) / totalGames;
+      const bestStreak = Math.max(state.sessionStats.bestStreak, state.longestStreak);
       
       return {
         ...state,
@@ -108,6 +127,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           averageScore,
           totalWordsGuessed,
           totalWordsSkipped,
+          bestStreak
         },
       };
     }
@@ -118,17 +138,34 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentWord: action.payload,
       };
       
-    case 'CORRECT_GUESS':
+    case 'CORRECT_GUESS': {
+      // Update streak
+      const newStreak = state.currentStreak + 1;
+      const newLongestStreak = Math.max(state.longestStreak, newStreak);
+      
+      // Add to score history
+      const scoreEntry = {
+        word: action.payload.word.word,
+        pointsEarned: action.payload.points,
+        difficulty: action.payload.word.difficulty,
+        timestamp: Date.now()
+      };
+      
       return {
         ...state,
         score: state.score + action.payload.points,
         wordsGuessed: state.wordsGuessed + 1,
+        currentStreak: newStreak,
+        longestStreak: newLongestStreak,
+        scoreHistory: [...state.scoreHistory, scoreEntry]
       };
+    }
       
     case 'SKIP_WORD':
       return {
         ...state,
         wordsSkipped: state.wordsSkipped + 1,
+        currentStreak: 0, // Reset streak on skip
         skippedWords: state.currentWord 
           ? [...state.skippedWords, state.currentWord]
           : state.skippedWords,

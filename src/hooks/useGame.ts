@@ -3,6 +3,7 @@
 import { useContext, useEffect } from 'react';
 import { GameStateContext, GameDispatchContext, GameState, GameAction } from '@/contexts/GameContext';
 import { useWordSelection } from './useWordSelection';
+import { Word } from '@/types';
 
 // Hook for accessing the game state
 export function useGameState(): GameState {
@@ -39,7 +40,12 @@ export function useGame() {
     pauseGame: () => dispatch({ type: 'PAUSE_GAME' }),
     resumeGame: () => dispatch({ type: 'RESUME_GAME' }),
     endGame: () => dispatch({ type: 'END_GAME' }),
-    correctGuess: (points = 1) => dispatch({ type: 'CORRECT_GUESS', payload: { points } }),
+    correctGuess: (points = 1, word: Word) => {
+      if (!word) {
+        throw new Error('Word is required for scoring');
+      }
+      dispatch({ type: 'CORRECT_GUESS', payload: { points, word } });
+    },
     skipWord: () => dispatch({ type: 'SKIP_WORD' }),
     setDifficulty: (difficulty: 'easy' | 'medium' | 'hard' | 'all') => 
       dispatch({ type: 'SET_DIFFICULTY', payload: difficulty }),
@@ -76,8 +82,11 @@ export function useGameWithWordSelection(options: GameWithWordSelectionOptions =
   }, [currentWord, dispatch]);
   
   // Functions that update both systems
-  const handleCorrectGuess = (points = 1) => {
-    dispatch({ type: 'CORRECT_GUESS', payload: { points } });
+  const handleCorrectGuess = (points = 1, word = currentWord) => {
+    if (!word) {
+      throw new Error('No word available for scoring');
+    }
+    dispatch({ type: 'CORRECT_GUESS', payload: { points, word } });
     getNextWord();
   };
   

@@ -76,24 +76,43 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
     const remainingSkips = game.maxSkipsPerGame - game.wordsSkipped;
     const skipsExhausted = remainingSkips <= 0;
     
+    // Check if we have an active streak
+    const hasStreak = game.currentStreak > 1;
+    
     return (
-      <div className="flex flex-col items-center space-y-2 mt-4">
-        <div className="flex justify-between w-full max-w-md px-4 py-2 bg-gray-100 rounded-lg">
-          <div>
-            <span className="text-sm text-gray-500">Score:</span>
-            <span className="ml-2 font-bold" data-testid="score-display">{game.score}</span>
+      <div className="flex flex-col items-center space-y-3 mt-4">
+        {/* Score and Stats Display */}
+        <div className="flex justify-between w-full max-w-md px-4 py-3 bg-gray-100 rounded-lg shadow-sm">
+          <div className="text-center">
+            <span className="text-sm text-gray-500">Score</span>
+            <p className="text-xl font-bold text-blue-600" data-testid="score-display">{game.score}</p>
           </div>
-          <div>
-            <span className="text-sm text-gray-500">Words:</span>
-            <span className="ml-2 font-bold" data-testid="words-guessed-display">{game.wordsGuessed}</span>
+          <div className="text-center">
+            <span className="text-sm text-gray-500">Words</span>
+            <p className="text-lg font-bold" data-testid="words-guessed-display">{game.wordsGuessed}</p>
           </div>
-          <div>
-            <span className="text-sm text-gray-500">Skips:</span>
-            <span className="ml-2 font-bold" data-testid="remaining-skips">{remainingSkips}</span>
+          <div className="text-center">
+            <span className="text-sm text-gray-500">Skips</span>
+            <p className="text-lg font-bold" data-testid="remaining-skips">{remainingSkips}</p>
+          </div>
+          <div className="text-center">
+            <span className="text-sm text-gray-500">Streak</span>
+            <p className={`text-lg font-bold ${hasStreak ? 'text-green-600' : ''}`} data-testid="current-streak">
+              {game.currentStreak}
+              {hasStreak && '🔥'}
+            </p>
           </div>
         </div>
         
-        <div className="flex space-x-2 mt-4">
+        {/* Streak Info - show when streak is active */}
+        {hasStreak && (
+          <div className="text-xs text-center text-gray-600 -mt-2">
+            <span>Streak bonus: +{Math.min(3, Math.floor(game.currentStreak / 2))} points per word</span>
+          </div>
+        )}
+        
+        {/* Game Controls */}
+        <div className="flex space-x-2 mt-2">
           <button
             onClick={handleSkipWord}
             disabled={skipsExhausted}
@@ -160,30 +179,64 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
       <div className="flex flex-col items-center space-y-4 mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
         <h2 className="text-xl font-semibold text-blue-800">Game Complete!</h2>
         
+        {/* Game Statistics */}
         <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-sm">
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-2 bg-gray-50 rounded">
+            <div className="text-center p-3 bg-gray-50 rounded shadow-sm">
               <p className="text-sm text-gray-500">Final Score</p>
-              <p className="text-2xl font-bold" data-testid="final-score">{game.score}</p>
+              <p className="text-2xl font-bold text-blue-600" data-testid="final-score">{game.score}</p>
             </div>
-            <div className="text-center p-2 bg-gray-50 rounded">
+            <div className="text-center p-3 bg-gray-50 rounded shadow-sm">
               <p className="text-sm text-gray-500">Words Guessed</p>
-              <p className="text-2xl font-bold" data-testid="final-words-guessed">{game.wordsGuessed}</p>
+              <p className="text-2xl font-bold text-green-600" data-testid="final-words-guessed">{game.wordsGuessed}</p>
             </div>
-            <div className="text-center p-2 bg-gray-50 rounded">
-              <p className="text-sm text-gray-500">Words Skipped</p>
-              <p className="text-2xl font-bold" data-testid="final-words-skipped">{game.wordsSkipped}</p>
+            <div className="text-center p-3 bg-gray-50 rounded shadow-sm">
+              <p className="text-sm text-gray-500">Longest Streak</p>
+              <p className="text-2xl font-bold text-orange-500" data-testid="longest-streak">{game.longestStreak}</p>
             </div>
-            <div className="text-center p-2 bg-gray-50 rounded">
-              <p className="text-sm text-gray-500">High Score</p>
-              <p className="text-2xl font-bold" data-testid="high-score">{game.sessionStats.highScore}</p>
+            <div className="text-center p-3 bg-gray-50 rounded shadow-sm">
+              <p className="text-sm text-gray-500">Best Score</p>
+              <p className="text-2xl font-bold text-purple-600" data-testid="high-score">{game.sessionStats.highScore}</p>
             </div>
           </div>
         </div>
         
-        {/* Display skipped words if any */}
+        {/* Score History */}
+        {game.scoreHistory.length > 0 && (
+          <div className="w-full max-w-md mt-2">
+            <h3 className="text-md font-semibold text-gray-700 mb-2">Scoring Details:</h3>
+            <div className="bg-white p-3 rounded-lg shadow-sm max-h-48 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b">
+                  <tr>
+                    <th className="text-left p-1">Word</th>
+                    <th className="text-left p-1">Difficulty</th>
+                    <th className="text-right p-1">Points</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {game.scoreHistory.map((score, index) => (
+                    <tr key={`score-${index}`} className="border-b border-gray-100">
+                      <td className="p-1 font-medium">{score.word}</td>
+                      <td className="p-1 capitalize">{score.difficulty}</td>
+                      <td className="p-1 text-right font-bold">+{score.pointsEarned}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="border-t">
+                  <tr>
+                    <td colSpan={2} className="p-1 text-right font-medium">Total Score:</td>
+                    <td className="p-1 text-right font-bold text-blue-600">{game.score}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )}
+        
+        {/* Skipped Words Section */}
         {game.skippedWords.length > 0 && (
-          <div className="w-full max-w-md mt-4">
+          <div className="w-full max-w-md mt-2">
             <h3 className="text-md font-semibold text-gray-700 mb-2">Skipped Words:</h3>
             <div className="bg-white p-3 rounded-lg shadow-sm max-h-48 overflow-y-auto">
               <ul className="divide-y divide-gray-100">
@@ -200,7 +253,7 @@ const GameControls: React.FC<GameControlsProps> = ({ onSkipWord }) => {
         
         <button
           onClick={game.resetGame}
-          className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          className="mt-2 px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
           data-testid="new-game-button"
         >
           New Game

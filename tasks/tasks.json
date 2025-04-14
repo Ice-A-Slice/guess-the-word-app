@@ -203,7 +203,7 @@
       "id": 8,
       "title": "Create Scoring System",
       "description": "Implement the scoring mechanism that awards points for correct guesses.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         6
       ],

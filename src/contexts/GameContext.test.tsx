@@ -2,6 +2,15 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameProvider } from './GameContext';
 import { useGameState, useGameDispatch, useGame } from '@/hooks/useGame';
+import { Word } from '@/types';
+
+// Mock word object to use in tests
+const mockWord: Word = {
+  id: 'test-1',
+  word: 'example',
+  definition: 'A thing that serves as a pattern',
+  difficulty: 'easy',
+};
 
 // Test component that uses the game context
 function TestComponent() {
@@ -15,7 +24,12 @@ function TestComponent() {
       <div data-testid="words-skipped">{game.wordsSkipped}</div>
       <button data-testid="start-game" onClick={game.startGame}>Start Game</button>
       <button data-testid="end-game" onClick={game.endGame}>End Game</button>
-      <button data-testid="correct-guess" onClick={() => game.correctGuess(1)}>Correct Guess</button>
+      <button 
+        data-testid="correct-guess" 
+        onClick={() => game.correctGuess(1, mockWord)}
+      >
+        Correct Guess
+      </button>
       <button data-testid="skip-word" onClick={game.skipWord}>Skip Word</button>
     </div>
   );

@@ -2,17 +2,52 @@ import React, { useState, useEffect } from 'react';
 import { useGameWithWordSelection } from '@/hooks';
 import GameControls from './GameControls';
 import GuessForm from './GuessForm';
+import ScoreAnimation from './ScoreAnimation';
 
 const GameContainer: React.FC = () => {
   const game = useGameWithWordSelection();
   const [showSkipMessage, setShowSkipMessage] = useState(false);
   const [skippedWord, setSkippedWord] = useState<string | null>(null);
+  const [showScoreAnimation, setShowScoreAnimation] = useState(false);
+  const [lastScorePoints, setLastScorePoints] = useState(0);
+  const [lastScoreDifficulty, setLastScoreDifficulty] = useState('');
   
   // Handler for correct guesses
   const handleCorrectGuess = (hintsUsed: number) => {
-    // Calculate points based on hints used (less hints = more points)
-    const points = Math.max(1, 3 - hintsUsed);
-    game.handleCorrectGuess(points);
+    if (!game.currentWord) return;
+    
+    // Calculate base points based on hints used (less hints = more points)
+    const basePoints = Math.max(1, 3 - hintsUsed);
+    
+    // Add bonus points based on difficulty
+    const difficultyBonus = {
+      easy: 0,
+      medium: 1,
+      hard: 2,
+      all: 0
+    };
+    
+    // Get bonus for the word's difficulty
+    const bonus = difficultyBonus[game.currentWord.difficulty] || 0;
+    
+    // Add streak bonus for 3+ consecutive correct guesses
+    const streakBonus = game.currentStreak >= 2 ? Math.min(3, Math.floor(game.currentStreak / 2)) : 0;
+    
+    // Calculate total points
+    const totalPoints = basePoints + bonus + streakBonus;
+    
+    // Show score animation
+    setLastScorePoints(totalPoints);
+    setLastScoreDifficulty(game.currentWord.difficulty);
+    setShowScoreAnimation(true);
+    
+    // Hide animation after a few seconds
+    setTimeout(() => {
+      setShowScoreAnimation(false);
+    }, 1500);
+    
+    // Pass both points and word to the action
+    game.handleCorrectGuess(totalPoints, game.currentWord);
   };
 
   // Enhanced skip handler with visual feedback
@@ -48,6 +83,16 @@ const GameContainer: React.FC = () => {
     
     return (
       <div className="w-full max-w-3xl mx-auto">
+        {/* Score Animation */}
+        {showScoreAnimation && (
+          <ScoreAnimation 
+            points={lastScorePoints} 
+            difficulty={lastScoreDifficulty}
+            hasStreak={game.currentStreak > 1}
+            streakCount={game.currentStreak}
+          />
+        )}
+        
         {/* Skip Feedback Message */}
         {showSkipMessage && skippedWord && (
           <div className="skip-feedback">
