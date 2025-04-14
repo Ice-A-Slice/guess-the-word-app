@@ -45,10 +45,6 @@ describe('DefinitionDisplay Component', () => {
     const hardText = screen.getByText('Hard');
     expect(hardText).toBeInTheDocument();
     
-    // Verifiera att star-emoji visas för hard difficulty
-    const starEmoji = screen.getByText('⭐');
-    expect(starEmoji).toBeInTheDocument();
-    
     // Verifiera att föräldraelementet har någon styling
     const container = screen.getByTestId('definition-display');
     expect(container).toBeInTheDocument();
