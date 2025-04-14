@@ -6,7 +6,7 @@ import { GameProvider } from '@/contexts/GameContext';
 
 // Mock för Settings-komponenten
 jest.mock('@/components/Settings', () => ({
-  Settings: ({ onClose }) => (
+  Settings: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="settings-modal">
       <button onClick={onClose}>Close Settings</button>
     </div>

@@ -63,7 +63,7 @@ describe('Settings Component', () => {
   });
 
   test('saves settings and closes when save button is clicked', () => {
-    const { getByLabelText } = render(
+    render(
       <GameProvider>
         <Settings onClose={mockOnClose} />
       </GameProvider>
