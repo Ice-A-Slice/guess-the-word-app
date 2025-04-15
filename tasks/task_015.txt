@@ -1,0 +1,11 @@
+# Task ID: 15
+# Title: Implement Optional Tutorial for First-time Users
+# Status: pending
+# Dependencies: 3, 6, 10
+# Priority: low
+# Description: Create a simple tutorial to guide first-time users through the game mechanics.
+# Details:
+Develop a brief, skippable tutorial that: explains the basic concept (guessing words from definitions), demonstrates how to input guesses and use the skip feature, shows how scoring works. Use localStorage to track if user has seen tutorial.
+
+# Test Strategy:
+Conduct usability testing with new users. Verify tutorial can be skipped and doesn't reappear for returning users. Test tutorial flow on different devices.

@@ -2,313 +2,163 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Setup React Project Structure",
-      "description": "Initialize the React.js project with responsive design configuration and set up the basic folder structure.",
-      "status": "done",
+      "title": "Setup OpenAI API Integration",
+      "description": "Implement the foundation for OpenAI API integration using the GPT-4o model, including secure API key management.",
+      "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "Create a new React project using Create React App or Vite. Set up folders for components, hooks, contexts, utils, and assets. Configure responsive CSS framework or CSS-in-JS solution as mentioned in technical specifications. Initialize Git repository and create initial commit.",
-      "testStrategy": "Verify project builds without errors. Ensure responsive design framework is properly integrated. Test basic rendering on different viewport sizes.",
+      "details": "Create a service module to handle OpenAI API calls. Implement environment variable configuration for the API key using a .env file (with .env.example for documentation). Create a basic API client that can make requests to the OpenAI API endpoint. Include proper error handling for API connection issues, rate limiting, and invalid responses. Test the connection with a simple prompt to verify functionality.",
+      "testStrategy": "Create unit tests to verify API client initialization. Mock API responses to test error handling scenarios. Verify environment variable loading works correctly.",
       "subtasks": [
         {
           "id": 1,
-          "title": "Initialize React Project with Development Tools",
-          "description": "Create a new React application using a modern build tool and configure essential development dependencies",
+          "title": "Initialize Project Structure and Environment Configuration",
+          "description": "Set up the project foundation with proper folder structure, environment configuration for API keys, and Git initialization.",
           "dependencies": [],
-          "details": "1. Choose between Create React App or Vite (recommended for better performance)\n2. Run the initialization command: `npm create vite@latest my-app --template react` or `npx create-react-app my-app`\n3. Navigate to project directory: `cd my-app`\n4. Install essential development dependencies: ESLint, Prettier\n5. Configure ESLint and Prettier in their respective config files\n6. Test the setup by running the development server: `npm run dev` or `npm start`\n7. Verify the application loads correctly in the browser\n\n<info added on 2025-04-12T17:54:30.332Z>\nHere's the additional information to add:\n\n## Next.js Implementation Details\n\n### Setup Instructions\n```bash\n# Create a Next.js app with TypeScript, ESLint, and Tailwind CSS in app subdirectory\nnpx create-next-app@latest app --typescript --eslint --tailwind --app\n```\n\n### Key Benefits\n- **Server-Side Rendering (SSR)**: Improves initial load time and SEO\n- **Static Site Generation (SSG)**: Pre-renders pages at build time for optimal performance\n- **App Router**: Modern routing system with nested layouts and server components\n- **API Routes**: Built-in serverless functions for backend functionality\n\n### Configuration Adjustments\n1. Update `next.config.js` to include any necessary custom settings:\n   ```javascript\n   /** @type {import('next').NextConfig} */\n   const nextConfig = {\n     reactStrictMode: true,\n     // Add other configurations as needed\n   }\n   \n   module.exports = nextConfig\n   ```\n\n2. Ensure TypeScript is properly configured in `tsconfig.json`:\n   ```json\n   {\n     \"compilerOptions\": {\n       \"baseUrl\": \".\",\n       \"paths\": {\n         \"@/*\": [\"./src/*\"]\n       }\n     }\n   }\n   ```\n\n3. Verify the development server with hot reload:\n   ```bash\n   cd app\n   npm run dev\n   ```\n\n4. Access the application at http://localhost:3000\n</info added on 2025-04-12T17:54:30.332Z>",
-          "status": "done",
+          "details": "1. Create the project directory structure:\n   - `/src` for source code\n   - `/src/services` for API services\n   - `/src/utils` for utility functions\n   - `/src/config` for configuration files\n2. Initialize package.json with necessary dependencies:\n   - Install dotenv for environment variable management\n   - Install axios for API requests\n   - Install OpenAI SDK\n3. Create environment configuration:\n   - Create .env file with OPENAI_API_KEY variable\n   - Create .env.example as documentation (without actual key)\n   - Create a config.js file that loads environment variables\n4. Initialize Git repository:\n   - Create .gitignore file (include node_modules, .env)\n   - Make initial commit\n\nTesting approach: Verify that environment variables are correctly loaded and accessible in the application.",
+          "status": "pending",
           "parentTaskId": 1
         },
         {
           "id": 2,
-          "title": "Create Project Folder Structure",
-          "description": "Establish a scalable and organized folder structure following best practices for React applications",
+          "title": "Implement OpenAI API Client Service",
+          "description": "Create a service module that handles communication with the OpenAI API, including request formatting and response parsing.",
           "dependencies": [
             1
           ],
-          "details": "1. Inside the `src` directory, create the following folders:\n   - `components/`: For reusable UI components\n   - `hooks/`: For custom React hooks\n   - `contexts/`: For React context providers\n   - `utils/`: For utility functions\n   - `assets/`: For images, fonts, and other static assets\n   - `pages/`: For page components (if using routing)\n   - `services/`: For API calls and external service integrations\n2. Create placeholder index.js files in each folder\n3. Update the main App component to import from the new structure\n4. Test that the application still builds and runs correctly",
-          "status": "done",
+          "details": "1. Create an OpenAI service class in `/src/services/openai.service.js`:\n   - Implement constructor that initializes the OpenAI client with API key from environment\n   - Create a method for making API calls to GPT-4o model endpoint\n   - Implement request formatting with proper parameters (model, messages, temperature, etc.)\n   - Add response parsing to extract relevant data\n2. Create utility functions in `/src/utils`:\n   - Add helper for formatting prompts\n   - Add helper for parsing responses\n3. Implement proper TypeScript/JSDoc types if applicable\n\nTesting approach: Create a simple test script that instantiates the service and makes a mock request without actually calling the API to verify the request structure is correct.",
+          "status": "pending",
           "parentTaskId": 1
         },
         {
           "id": 3,
-          "title": "Configure Responsive CSS Framework",
-          "description": "Set up a responsive design solution that will ensure the application works well across different device sizes",
+          "title": "Implement Error Handling and Connection Testing",
+          "description": "Add comprehensive error handling for API interactions and create a test module to verify the OpenAI integration works correctly.",
           "dependencies": [
-            1,
             2
           ],
-          "details": "1. Choose a responsive CSS approach based on technical specifications:\n   - Option A: Install Tailwind CSS: `npm install -D tailwindcss postcss autoprefixer`\n   - Option B: Install styled-components: `npm install styled-components`\n   - Option C: Install Material UI: `npm install @mui/material @emotion/react @emotion/styled`\n2. Configure the chosen framework according to its documentation\n3. Create a responsive test component with breakpoints for mobile, tablet, and desktop\n4. Add viewport meta tag in index.html: `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">`\n5. Test the responsive behavior by resizing the browser window or using browser dev tools device emulation",
-          "status": "done",
-          "parentTaskId": 1
-        },
-        {
-          "id": 4,
-          "title": "Initialize Git Repository and Configure Version Control",
-          "description": "Set up version control with Git and configure essential Git settings for collaborative development",
-          "dependencies": [
-            1,
-            2,
-            3
-          ],
-          "details": "1. Initialize Git repository (if not already done by the project generator): `git init`\n2. Create a comprehensive .gitignore file that excludes:\n   - node_modules/\n   - build/ or dist/\n   - .env files\n   - IDE-specific files\n   - OS-specific files\n3. Configure Git user information for the project\n4. Create a README.md file with:\n   - Project name and description\n   - Setup instructions\n   - Available scripts\n   - Folder structure overview\n5. Set up Git hooks using Husky (optional): `npm install -D husky lint-staged`\n6. Configure Husky to run linting and formatting before commits",
-          "status": "done",
-          "parentTaskId": 1
-        },
-        {
-          "id": 5,
-          "title": "Create Initial Commit with Project Skeleton",
-          "description": "Finalize the project setup with an initial commit that includes all the configured structure and dependencies",
-          "dependencies": [
-            1,
-            2,
-            3,
-            4
-          ],
-          "details": "1. Review all changes to ensure everything is properly set up\n2. Create a sample component in the components folder to demonstrate the project structure\n3. Update the main App component to use the sample component\n4. Run a final test to ensure the application builds and runs correctly\n5. Stage all files for commit: `git add .`\n6. Create the initial commit with a descriptive message: `git commit -m \"Initial project setup with folder structure and responsive design configuration\"`\n7. (Optional) Create a remote repository on GitHub/GitLab/Bitbucket\n8. (Optional) Add the remote repository: `git remote add origin [repository-url]`\n9. (Optional) Push the initial commit: `git push -u origin main`",
-          "status": "done",
+          "details": "1. Enhance the OpenAI service with error handling:\n   - Implement try/catch blocks for API calls\n   - Add specific error handling for common scenarios:\n     - API key validation errors\n     - Rate limiting and quota errors\n     - Network connectivity issues\n     - Malformed response handling\n   - Create meaningful error messages and logging\n2. Implement a retry mechanism for transient errors\n3. Create a test module in `/src/tests/openai.test.js`:\n   - Implement a simple test that sends a basic prompt to OpenAI\n   - Verify the response format is as expected\n   - Test error scenarios by forcing errors (e.g., invalid API key)\n4. Create a simple CLI command to test the integration\n\nTesting approach: Run the test module with valid credentials to verify end-to-end functionality with the actual OpenAI API. Test error handling by intentionally causing different error conditions.",
+          "status": "pending",
           "parentTaskId": 1
         }
       ]
     },
     {
       "id": 2,
-      "title": "Create Word Data Model and Sample Dataset",
-      "description": "Implement the Word data model and create a static JSON dataset with at least 100 words for the MVP.",
-      "status": "done",
+      "title": "Implement Description Generation Prompt Engineering",
+      "description": "Design and implement the prompt structure for generating word descriptions in multiple languages using GPT-4o.",
+      "status": "pending",
       "dependencies": [
         1
       ],
       "priority": "high",
-      "details": "Create a JSON file with at least 100 words following the specified Word Model structure: {id: string, word: string, definition: string, difficulty: string (easy, medium, hard), category: string (optional)}. Ensure words are distributed across different difficulty levels. Implement utility functions to access and filter this data.",
-      "testStrategy": "Validate JSON structure. Write unit tests for data access utilities. Verify word count and distribution across difficulty levels."
+      "details": "Create a prompt template that takes an English word and target language as inputs. The prompt should clearly instruct GPT-4o to generate a description of the word in the specified language (English or Swedish). Include instructions in the prompt to ensure the description doesn't directly mention the word itself. Implement a function that takes a word and language code and returns the formatted prompt. Test different prompt structures to find the most effective one for generating clear, helpful descriptions.",
+      "testStrategy": "Test the prompt with various words and both language options. Evaluate the quality of generated descriptions. Verify that descriptions don't contain the target word. Create unit tests for the prompt generation function."
     },
     {
       "id": 3,
-      "title": "Implement Core UI Components",
-      "description": "Develop the basic UI components needed for the game interface with a focus on accessibility standards.",
-      "status": "done",
-      "dependencies": [
-        1
-      ],
+      "title": "Create Language Selection UI Component",
+      "description": "Design and implement a UI element allowing users to select between English and Swedish for word descriptions.",
+      "status": "pending",
+      "dependencies": [],
       "priority": "high",
-      "details": "Create reusable components for: definition display area, word input field, skip button, score display, feedback messages (correct/incorrect). Follow minimalist design principles with focus on readability. Ensure components are accessible and responsive. All components must comply with WCAG accessibility standards, including proper semantic HTML and ARIA attributes where needed. Pay special attention to ensuring that forms, buttons, and interactive elements are fully usable with mouse, keyboard, and screen readers.",
-      "testStrategy": "Create component stories or snapshots. Test components in isolation. Verify accessibility compliance with automated tools. Include specific accessibility tests to ensure keyboard navigation, screen reader compatibility, and WCAG compliance.",
-      "subtasks": [
-        {
-          "id": 3.1,
-          "title": "Implement semantic HTML structure for all components",
-          "status": "done"
-        },
-        {
-          "id": 3.2,
-          "title": "Add appropriate ARIA attributes to interactive elements",
-          "status": "done"
-        },
-        {
-          "id": 3.3,
-          "title": "Test keyboard navigation for all interactive components",
-          "status": "done"
-        },
-        {
-          "id": 3.4,
-          "title": "Verify screen reader compatibility",
-          "status": "done"
-        },
-        {
-          "id": 3.5,
-          "title": "Run automated WCAG compliance tests",
-          "status": "done"
-        }
-      ]
+      "details": "Create a dropdown menu or toggle buttons for language selection. Initially support English and Swedish options. Style the component to match the existing game UI. Implement state management to track the currently selected language. Ensure the component is accessible and has proper labeling. Position the component logically within the game interface.",
+      "testStrategy": "Verify UI renders correctly across different screen sizes. Test keyboard navigation and screen reader compatibility. Ensure state updates correctly when language is changed. Create unit tests for the component's rendering and state management."
     },
     {
       "id": 4,
-      "title": "Develop Word Selection Logic",
-      "description": "Create functionality to select and present random words from the database.",
-      "status": "completed",
+      "title": "Implement State Management for Language Selection",
+      "description": "Update the application's state management to incorporate the selected description language.",
+      "status": "pending",
       "dependencies": [
-        2
+        3
       ],
-      "priority": "high",
-      "details": "Implement functions to: randomly select words from the dataset, filter by difficulty if needed, ensure words don't repeat too frequently in a session. Create a custom hook (useWordSelection) to manage word selection state and logic.",
-      "testStrategy": "Write unit tests for selection algorithm. Verify randomness and non-repetition. Test edge cases like empty dataset."
+      "priority": "medium",
+      "details": "Extend the existing game state to include the selected language (default to English). Create actions/reducers for updating the language selection. Ensure the language selection persists during a game session. Connect the language selection UI component to the state management system. Implement proper state initialization and update logic.",
+      "testStrategy": "Write unit tests for state management functions. Verify state updates correctly when language selection changes. Test that initial state loads with default language. Ensure state consistency across game interactions."
     },
     {
       "id": 5,
-      "title": "Implement Guess Validation Logic",
-      "description": "Create the core game mechanic to validate user guesses against the correct word, with robust error handling and user-friendly feedback.",
-      "status": "completed",
+      "title": "Integrate Description Generation with Game Logic",
+      "description": "Connect the OpenAI API service with the core game logic to generate descriptions for the selected words.",
+      "status": "pending",
       "dependencies": [
+        1,
         2,
-        3
+        4
       ],
       "priority": "high",
-      "details": "Implement functions to: compare user input with the correct word, handle case insensitivity, and provide appropriate feedback. Include robust error handling with user-friendly error messages that offer concrete improvement suggestions. Handle edge cases such as empty inputs, special characters, and extremely long inputs. Implement fuzzy matching to allow for minor typos. Ensure validation works consistently across different devices and input methods.",
-      "testStrategy": "Write comprehensive unit tests with various test cases including exact matches, case differences, and near-matches. Test with edge cases like empty inputs, special characters, and extremely long inputs. Verify consistent behavior across different devices and input methods. Test fuzzy matching with various types of minor typos and misspellings.",
-      "subtasks": [
-        {
-          "id": "5.1",
-          "description": "Implement basic word comparison functionality with case insensitivity",
-          "status": "completed"
-        },
-        {
-          "id": "5.2",
-          "description": "Add user-friendly error messages with concrete improvement suggestions",
-          "status": "completed"
-        },
-        {
-          "id": "5.3",
-          "description": "Implement handling for edge cases (empty inputs, special characters, long inputs)",
-          "status": "completed"
-        },
-        {
-          "id": "5.4",
-          "description": "Develop fuzzy matching algorithm for minor typos",
-          "status": "completed"
-        },
-        {
-          "id": "5.5",
-          "description": "Test validation across different devices and input methods",
-          "status": "completed"
-        }
-      ]
+      "details": "Modify the game's word selection logic to fetch a description from the OpenAI API after selecting a word. Pass the current language selection to the description generation function. Implement caching for the current round to avoid redundant API calls. Update the game state to store the generated description. Ensure the description is refreshed when a new word is selected.",
+      "testStrategy": "Create integration tests that verify the full flow from word selection to description display. Mock API responses to test various scenarios. Verify descriptions update when language is changed. Test error handling during description generation."
     },
     {
       "id": 6,
-      "title": "Develop Game State Management",
-      "description": "Implement state management for the game session including current word, score, and game progress.",
-      "status": "completed",
+      "title": "Update UI to Display Generated Descriptions",
+      "description": "Modify the game interface to display the LLM-generated descriptions in the user's selected language.",
+      "status": "pending",
       "dependencies": [
-        4,
         5
       ],
-      "priority": "high",
-      "details": "Create a React context or custom hooks to manage: current game state, current word and definition, user score, session statistics. Implement functions for updating score, skipping words, and tracking session progress.",
-      "testStrategy": "Write unit tests for state transitions. Create integration tests for the complete game loop. Test state persistence during component re-renders."
+      "priority": "medium",
+      "details": "Update the game UI to display the generated description prominently. Add loading indicators while descriptions are being generated. Implement proper text formatting and styling for the descriptions. Ensure the UI handles descriptions of varying lengths appropriately. Add visual indication of the currently selected language.",
+      "testStrategy": "Test UI rendering with descriptions of different lengths. Verify loading states display correctly. Check that language changes are reflected in the UI. Test accessibility of the description display."
     },
     {
       "id": 7,
-      "title": "Implement Skip Functionality",
-      "description": "Add the ability for users to skip difficult words without penalty.",
-      "status": "completed",
+      "title": "Implement Error Handling for Description Generation",
+      "description": "Create robust error handling for API calls and description generation failures.",
+      "status": "pending",
       "dependencies": [
-        6
-      ],
-      "priority": "medium",
-      "details": "Implement skip button functionality that: presents a new word when clicked, tracks skipped words in session statistics, ensures smooth transition between words. Connect this to the game state management system.",
-      "testStrategy": "Test skip functionality in isolation. Verify new words are presented correctly. Check that skipped words are properly tracked in statistics."
-    },
-    {
-      "id": 8,
-      "title": "Create Scoring System",
-      "description": "Implement the scoring mechanism that awards points for correct guesses.",
-      "status": "completed",
-      "dependencies": [
-        6
-      ],
-      "priority": "medium",
-      "details": "Develop scoring logic that: awards one point for each correct guess, updates and displays the current score prominently, persists score during the session. Integrate with game state management.",
-      "testStrategy": "Write unit tests for score calculation. Test score updates after correct guesses. Verify score persistence throughout game session."
-    },
-    {
-      "id": 9,
-      "title": "Implement Session Management",
-      "description": "Create functionality to manage game sessions, including starting new games and ending sessions.",
-      "status": "completed",
-      "dependencies": [
-        6,
-        7,
-        8
-      ],
-      "priority": "medium",
-      "details": "Implement session controls to: start a new game with score reset, end current session with score summary, use localStorage to persist session data if user refreshes. Create session summary display with statistics.",
-      "testStrategy": "Test session initialization and reset. Verify end-of-session summary displays correctly. Test persistence across page refreshes."
-    },
-    {
-      "id": 10,
-      "title": "Enhance UI with Feedback and Animations",
-      "description": "Improve the user experience with visual feedback for correct/incorrect answers and smooth transitions.",
-      "status": "completed",
-      "dependencies": [
-        3,
         5
       ],
       "priority": "medium",
-      "details": "Implement: color-coded feedback for correct/incorrect answers, subtle animations for transitions between words, visual indication when skip is used. Ensure animations are subtle and enhance rather than distract from gameplay.",
-      "testStrategy": "Conduct usability testing with real users. Verify animations work across different browsers. Test accessibility of visual feedback elements."
+      "details": "Implement comprehensive error handling for API failures (network issues, rate limiting, invalid responses). Create user-friendly error messages for different failure scenarios. Implement fallback mechanisms when description generation fails (e.g., retry logic, fallback to English, use of cached descriptions). Add logging for API errors to aid debugging. Ensure the game remains playable even if description generation fails.",
+      "testStrategy": "Simulate various API failure scenarios and verify error handling. Test retry logic functionality. Verify user-facing error messages are clear and helpful. Ensure game remains functional during API disruptions."
     },
     {
-      "id": 11,
-      "title": "Implement Local Storage for Game Progress",
-      "description": "Add functionality to save game progress and high scores in browser local storage.",
-      "status": "completed",
+      "id": 8,
+      "title": "Preserve Core Game Functionality",
+      "description": "Ensure the original word guessing mechanics continue to function correctly with the new LLM-enhanced features.",
+      "status": "pending",
+      "dependencies": [
+        5,
+        6
+      ],
+      "priority": "high",
+      "details": "Review and test the core game mechanics (word selection, guess validation, score tracking) to ensure they work with the new description system. Verify that guessing still targets the original English word regardless of description language. Ensure game flow (new rounds, game over conditions) works correctly. Maintain any existing game features not modified by this enhancement.",
+      "testStrategy": "Create end-to-end tests for complete game flows. Verify word validation works correctly with both language options. Test game progression through multiple rounds. Ensure all original game features remain functional."
+    },
+    {
+      "id": 9,
+      "title": "Optimize API Usage and Performance",
+      "description": "Implement basic optimizations to improve performance and manage API usage efficiently.",
+      "status": "pending",
+      "dependencies": [
+        5,
+        7
+      ],
+      "priority": "low",
+      "details": "Implement simple caching for descriptions to avoid redundant API calls within a session. Add timeout handling for API calls to prevent UI blocking. Optimize prompt length to reduce token usage. Implement basic rate limiting to prevent excessive API calls. Monitor and log API usage for future optimization. Consider implementing a queue for API requests if needed.",
+      "testStrategy": "Measure and compare performance before and after optimizations. Test caching functionality to verify it prevents redundant API calls. Verify timeout handling works correctly. Test rate limiting functionality."
+    },
+    {
+      "id": 10,
+      "title": "Conduct Final Integration Testing",
+      "description": "Perform comprehensive testing of the complete LLM-enhanced word guessing game.",
+      "status": "pending",
       "dependencies": [
         8,
         9
       ],
       "priority": "medium",
-      "details": "Create utilities to: save current score to localStorage, track and persist high scores, save session statistics. Implement auto-save functionality to prevent progress loss on accidental refresh.",
-      "testStrategy": "Test storage and retrieval of game data. Verify data persistence across browser sessions. Test handling of localStorage being unavailable or full."
-    },
-    {
-      "id": 12,
-      "title": "Add Difficulty Level Selection",
-      "description": "Implement the ability for users to select word difficulty levels (easy, medium, hard).",
-      "status": "completed",
-      "dependencies": [
-        4,
-        6
-      ],
-      "priority": "low",
-      "details": "Create UI controls for difficulty selection. Modify word selection logic to filter by chosen difficulty. Update game state to track current difficulty setting. Ensure smooth transitions when difficulty is changed mid-game.",
-      "testStrategy": "Test word filtering by each difficulty level. Verify UI updates correctly when difficulty changes. Test edge cases like changing difficulty with no words available."
-    },
-    {
-      "id": 13,
-      "title": "Implement Session Statistics",
-      "description": "Add detailed statistics tracking for the current game session.",
-      "status": "completed",
-      "dependencies": [
-        9,
-        11
-      ],
-      "priority": "low",
-      "details": "Track and display: words guessed correctly, words skipped, accuracy rate (correct guesses / total attempts), streak of consecutive correct answers. Create a statistics view that can be accessed during or after a session.",
-      "testStrategy": "Verify statistics calculations are accurate. Test statistics persistence in localStorage. Test statistics display with various game scenarios."
-    },
-    {
-      "id": 14,
-      "title": "Create Responsive Design Optimizations",
-      "description": "Enhance the responsive design to ensure optimal experience across all device sizes.",
-      "status": "completed",
-      "dependencies": [
-        3,
-        10
-      ],
-      "priority": "low",
-      "details": "Implement responsive optimizations for: text size and readability on small screens, touch-friendly controls for mobile, keyboard accessibility for desktop. Test and refine layout across various viewport sizes.",
-      "testStrategy": "Test on multiple physical devices. Use browser dev tools to test various viewport sizes. Conduct accessibility testing across different devices."
-    },
-    {
-      "id": 15,
-      "title": "Implement Optional Tutorial for First-time Users",
-      "description": "Create a simple tutorial to guide first-time users through the game mechanics.",
-      "status": "completed",
-      "dependencies": [
-        3,
-        6,
-        10
-      ],
-      "priority": "low",
-      "details": "Develop a brief, skippable tutorial that: explains the basic concept (guessing words from definitions), demonstrates how to input guesses and use the skip feature, shows how scoring works. Use localStorage to track if user has seen tutorial.",
-      "testStrategy": "Conduct usability testing with new users. Verify tutorial can be skipped and doesn't reappear for returning users. Test tutorial flow on different devices."
+      "details": "Create test scenarios covering all user flows and feature combinations. Test language switching during gameplay. Verify descriptions are appropriate and helpful for guessing the words. Test error scenarios and recovery. Verify performance under normal usage conditions. Test across different browsers and devices if applicable. Document any issues or limitations discovered.",
+      "testStrategy": "Create a test plan covering all features and user flows. Perform manual testing of the complete application. Gather feedback from test users if possible. Document test results and any discovered issues. Verify all success metrics from the PRD are met."
     }
   ],
   "metadata": {
-    "projectName": "Guess the Word Game",
-    "totalTasks": 15,
-    "sourceFile": "scripts/prd.txt",
-    "generatedAt": "2023-11-10"
+    "projectName": "LLM-Enhanced Word Guessing Game - Phase 1",
+    "totalTasks": 10,
+    "sourceFile": "llm-word-guessing-game-prd.txt",
+    "generatedAt": "2023-07-12"
   }
 }
