@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'generateWordDescription':
         return handleGenerateWordDescription(word);
+      case 'generateMultilingualWordDescription':
+        return handleMultilingualWordDescription(word, language);
       case 'generateHint':
         return handleGenerateHint(word, previousGuesses);
       case 'analyzeGuess':
@@ -72,6 +74,72 @@ async function handleGenerateWordDescription(word: string) {
     console.error('Error generating word description:', error);
     return NextResponse.json(
       { error: 'Failed to generate word description' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Generate a multilingual description for a word
+ */
+async function handleMultilingualWordDescription(word: string, language: string = 'English') {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `You are an expert linguist and game designer specializing in word games. 
+Your task is to create engaging, concise descriptions of words for a guessing game that works across multiple languages.
+You must ALWAYS follow these rules:
+1. NEVER mention the word itself in your description
+2. NEVER use words that share the same root or are derivatives of the target word
+3. ALWAYS respond in ${language} only
+4. Avoid obvious clues that would make guessing too easy
+5. Focus on the word's meaning, usage context, and notable characteristics
+6. Adjust difficulty based on word complexity - common words should have more nuanced descriptions
+7. For abstract concepts, use relatable examples
+8. For proper nouns or specialized terms, provide broader category information`
+        },
+        {
+          role: 'user',
+          content: `Create a challenging but fair description (2-3 sentences) for the word "${word}" to be used in a word-guessing game.
+
+The description should:
+- Give thoughtful hints about the word's meaning, usage, or characteristics
+- Be understood by general audiences
+- Balance difficulty (not too obvious, not impossible)
+- Absolutely avoid using the word "${word}" or any direct derivatives
+- Be written entirely in ${language}
+
+Example of a good description for "book" in English might be: "This object contains many pages filled with text or images. People use it to gain knowledge or for entertainment, and it has existed for centuries in various forms."`
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.7,
+    });
+
+    // Extract and return the generated content
+    const generatedContent = response.choices[0]?.message?.content?.trim() || 
+                            `A common term used in many contexts.`;
+    
+    // Quick validation to make sure the word isn't explicitly mentioned
+    const contentLowerCase = generatedContent.toLowerCase();
+    const wordLowerCase = word.toLowerCase();
+    
+    // If the word appears in the description, generate a generic fallback
+    const finalContent = contentLowerCase.includes(wordLowerCase) 
+      ? `This is something people encounter in everyday life. It has specific uses and characteristics that make it recognizable.`
+      : generatedContent;
+    
+    return NextResponse.json({
+      content: finalContent,
+      language: language
+    });
+  } catch (error) {
+    console.error('Error generating multilingual word description:', error);
+    return NextResponse.json(
+      { error: 'Failed to generate multilingual word description' },
       { status: 500 }
     );
   }
