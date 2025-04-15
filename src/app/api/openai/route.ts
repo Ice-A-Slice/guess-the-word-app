@@ -80,8 +80,11 @@ async function handleGenerateWordDescription(word: string) {
 /**
  * Generate a multilingual description for a word
  */
-async function handleMultilingualWordDescription(word: string, language: string = 'English') {
+async function handleMultilingualWordDescription(word: string, language: string = 'en') {
   try {
+    // Map API language code to human-readable language for prompts
+    const languageName = language === 'en' ? 'English' : 'Swedish';
+    
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -92,7 +95,7 @@ Your task is to create engaging, concise descriptions of words for a guessing ga
 You must ALWAYS follow these rules:
 1. NEVER mention the word itself in your description
 2. NEVER use words that share the same root or are derivatives of the target word
-3. ALWAYS respond in ${language} only
+3. ALWAYS respond in ${languageName} only
 4. Avoid obvious clues that would make guessing too easy
 5. Focus on the word's meaning, usage context, and notable characteristics
 6. Adjust difficulty based on word complexity - common words should have more nuanced descriptions
@@ -108,7 +111,7 @@ The description should:
 - Be understood by general audiences
 - Balance difficulty (not too obvious, not impossible)
 - Absolutely avoid using the word "${word}" or any direct derivatives
-- Be written entirely in ${language}
+- Be written entirely in ${languageName}
 
 Example of a good description for "book" in English might be: "This object contains many pages filled with text or images. People use it to gain knowledge or for entertainment, and it has existed for centuries in various forms."`
         }

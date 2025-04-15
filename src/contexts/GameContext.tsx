@@ -24,6 +24,12 @@ export interface GameState {
   // Current word from useWordSelection
   currentWord: Word | null;
   
+  // Current description for the selected word
+  currentDescription: string | null;
+  
+  // Description loading state
+  isDescriptionLoading: boolean;
+  
   // Score tracking
   score: number;
   wordsGuessed: number;
@@ -72,6 +78,8 @@ export type GameAction =
   | { type: 'SET_WORD'; payload: Word }
   | { type: 'CORRECT_GUESS'; payload: { points: number; word: Word } }
   | { type: 'SKIP_WORD' }
+  | { type: 'SET_DESCRIPTION'; payload: string }
+  | { type: 'SET_DESCRIPTION_LOADING'; payload: boolean }
   | { type: 'SET_DIFFICULTY'; payload: 'easy' | 'medium' | 'hard' | 'all' }
   | { type: 'SET_MAX_SKIPS'; payload: number }
   | { type: 'SET_DESCRIPTION_LANGUAGE'; payload: DescriptionLanguage }
@@ -84,6 +92,8 @@ export type GameAction =
 const initialState: GameState = {
   status: 'idle',
   currentWord: null,
+  currentDescription: null,
+  isDescriptionLoading: false,
   score: 0,
   wordsGuessed: 0,
   wordsSkipped: 0,
@@ -217,6 +227,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       
       return newState;
     }
+      
+    case 'SET_DESCRIPTION':
+      return {
+        ...state,
+        currentDescription: action.payload,
+      };
+      
+    case 'SET_DESCRIPTION_LOADING':
+      return {
+        ...state,
+        isDescriptionLoading: action.payload,
+      };
       
     case 'SET_DIFFICULTY':
       return {
@@ -388,6 +410,8 @@ export function useGameContext() {
   const setDescriptionLanguage = (language: DescriptionLanguage) => dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: language });
   const resetGame = () => dispatch({ type: 'RESET_GAME' });
   const continueSession = () => dispatch({ type: 'CONTINUE_SESSION' });
+  const setDescription = (description: string) => dispatch({ type: 'SET_DESCRIPTION', payload: description });
+  const setDescriptionLoading = (isLoading: boolean) => dispatch({ type: 'SET_DESCRIPTION_LOADING', payload: isLoading });
   
   return {
     ...state,
@@ -403,5 +427,7 @@ export function useGameContext() {
     setDescriptionLanguage,
     resetGame,
     continueSession,
+    setDescription,
+    setDescriptionLoading,
   };
 } 

@@ -1,9 +1,10 @@
 'use client';
 
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useCallback } from 'react';
 import { GameStateContext, GameDispatchContext, GameState, GameAction } from '@/contexts/GameContext';
 import { useWordSelection } from './useWordSelection';
 import { Word } from '@/types';
+import openaiService from '@/services/openaiService';
 
 // Hook for accessing the game state
 export function useGameState(): GameState {
@@ -75,12 +76,48 @@ export function useGameWithWordSelection(options: GameWithWordSelectionOptions =
   
   const { currentWord, getNextWord, ...wordSelection } = useWordSelection(wordSelectionOptions);
   
+  // Helper function to fetch word descriptions - wrapped with useCallback
+  const fetchWordDescription = useCallback(async (word: string, language: GameState['descriptionLanguage']) => {
+    if (!word || !language) return;
+    
+    try {
+      // Set loading state
+      dispatch({ type: 'SET_DESCRIPTION_LOADING', payload: true });
+      
+      // Fetch description
+      const description = await openaiService.generateWordDescription(word, language);
+      
+      // Update game state with description
+      dispatch({ type: 'SET_DESCRIPTION', payload: description });
+    } catch (error) {
+      console.error('Error fetching word description:', error);
+      // Set a fallback description
+      dispatch({ 
+        type: 'SET_DESCRIPTION', 
+        payload: `A ${language === 'English' ? 'common English' : 'vanligt svenskt'} word.` 
+      });
+    } finally {
+      // Clear loading state
+      dispatch({ type: 'SET_DESCRIPTION_LOADING', payload: false });
+    }
+  }, [dispatch]);
+  
   // Update game state when word changes
   useEffect(() => {
     if (currentWord) {
       dispatch({ type: 'SET_WORD', payload: currentWord });
+      
+      // Fetch description for the new word
+      fetchWordDescription(currentWord.word, gameState.descriptionLanguage);
     }
-  }, [currentWord, dispatch]);
+  }, [currentWord, dispatch, fetchWordDescription, gameState.descriptionLanguage]);
+  
+  // Fetch new description when language changes
+  useEffect(() => {
+    if (currentWord && gameState.descriptionLanguage) {
+      fetchWordDescription(currentWord.word, gameState.descriptionLanguage);
+    }
+  }, [gameState.descriptionLanguage, currentWord, fetchWordDescription]);
   
   // Functions that update both systems
   const handleCorrectGuess = (points = 1, word = currentWord) => {
@@ -117,6 +154,9 @@ export function useGameWithWordSelection(options: GameWithWordSelectionOptions =
     endGame: () => dispatch({ type: 'END_GAME' }),
     setDifficulty: (difficulty: 'easy' | 'medium' | 'hard' | 'all') => {
       dispatch({ type: 'SET_DIFFICULTY', payload: difficulty });
+    },
+    setDescriptionLanguage: (language: GameState['descriptionLanguage']) => {
+      dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: language });
     },
     resetGame: () => {
       dispatch({ type: 'RESET_GAME' });
