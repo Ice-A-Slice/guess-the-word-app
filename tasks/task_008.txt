@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Preserve Core Game Functionality
+# Status: pending
+# Dependencies: 5, 6
+# Priority: high
+# Description: Ensure the original word guessing mechanics continue to function correctly with the new LLM-enhanced features.
+# Details:
+Review and test the core game mechanics (word selection, guess validation, score tracking) to ensure they work with the new description system. Verify that guessing still targets the original English word regardless of description language. Ensure game flow (new rounds, game over conditions) works correctly. Maintain any existing game features not modified by this enhancement.
+
+# Test Strategy:
+Create end-to-end tests for complete game flows. Verify word validation works correctly with both language options. Test game progression through multiple rounds. Ensure all original game features remain functional.

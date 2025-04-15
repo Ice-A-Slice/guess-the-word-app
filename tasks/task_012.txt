@@ -1,0 +1,11 @@
+# Task ID: 12
+# Title: Add Difficulty Level Selection
+# Status: pending
+# Dependencies: 4, 6
+# Priority: low
+# Description: Implement the ability for users to select word difficulty levels (easy, medium, hard).
+# Details:
+Create UI controls for difficulty selection. Modify word selection logic to filter by chosen difficulty. Update game state to track current difficulty setting. Ensure smooth transitions when difficulty is changed mid-game.
+
+# Test Strategy:
+Test word filtering by each difficulty level. Verify UI updates correctly when difficulty changes. Test edge cases like changing difficulty with no words available.

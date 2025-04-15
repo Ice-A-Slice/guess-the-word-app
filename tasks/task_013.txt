@@ -1,0 +1,11 @@
+# Task ID: 13
+# Title: Implement Session Statistics
+# Status: pending
+# Dependencies: 9, 11
+# Priority: low
+# Description: Add detailed statistics tracking for the current game session.
+# Details:
+Track and display: words guessed correctly, words skipped, accuracy rate (correct guesses / total attempts), streak of consecutive correct answers. Create a statistics view that can be accessed during or after a session.
+
+# Test Strategy:
+Verify statistics calculations are accurate. Test statistics persistence in localStorage. Test statistics display with various game scenarios.

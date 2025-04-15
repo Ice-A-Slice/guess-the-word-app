@@ -1,0 +1,11 @@
+# Task ID: 2
+# Title: Implement Description Generation Prompt Engineering
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Design and implement the prompt structure for generating word descriptions in multiple languages using GPT-4o.
+# Details:
+Create a prompt template that takes an English word and target language as inputs. The prompt should clearly instruct GPT-4o to generate a description of the word in the specified language (English or Swedish). Include instructions in the prompt to ensure the description doesn't directly mention the word itself. Implement a function that takes a word and language code and returns the formatted prompt. Test different prompt structures to find the most effective one for generating clear, helpful descriptions.
+
+# Test Strategy:
+Test the prompt with various words and both language options. Evaluate the quality of generated descriptions. Verify that descriptions don't contain the target word. Create unit tests for the prompt generation function.
