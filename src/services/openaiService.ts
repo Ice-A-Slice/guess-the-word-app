@@ -140,6 +140,26 @@ const openaiService = {
           : 'Failed to generate sample'
       );
     }
+  },
+
+  /**
+   * Generates a word description in the specified language
+   */
+  generateMultilingualWordDescription: async (word: string, language: string): Promise<AIResponse> => {
+    try {
+      const result = await openaiService._makeAPIRequest('generateMultilingualWordDescription', { word, language });
+      return {
+        content: result.content,
+        tokenUsage: result.tokenUsage
+      };
+    } catch (error) {
+      console.error(`Error generating ${language} description:`, error);
+      throw new OpenAIServiceError(
+        error instanceof Error 
+          ? `Failed to generate ${language} description: ${error.message}` 
+          : `Failed to generate ${language} description`
+      );
+    }
   }
 };
 
