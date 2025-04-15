@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Create Language Selection UI Component
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Design and implement a UI element allowing users to select between English and Swedish for word descriptions.
+# Details:
+Create a dropdown menu or toggle buttons for language selection. Initially support English and Swedish options. Style the component to match the existing game UI. Implement state management to track the currently selected language. Ensure the component is accessible and has proper labeling. Position the component logically within the game interface.
+
+# Test Strategy:
+Verify UI renders correctly across different screen sizes. Test keyboard navigation and screen reader compatibility. Ensure state updates correctly when language is changed. Create unit tests for the component's rendering and state management.
