@@ -19,3 +19,16 @@ export interface AIResponse {
     total: number;
   };
 }
+
+/**
+ * Supported languages for word descriptions
+ */
+export type Language = 'en' | 'sv';
+
+/**
+ * Language names mapping
+ */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  'en': 'English',
+  'sv': 'Swedish'
+};
