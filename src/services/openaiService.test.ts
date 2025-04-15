@@ -1,5 +1,14 @@
 import openaiService from './openaiService';
-import { OpenAIServiceError, Language } from './openaiService.types';
+import { OpenAIServiceError } from './openaiService.types';
+import descriptionCache from './cacheService';
+
+// Mock cacheService
+jest.mock('./cacheService', () => ({
+  get: jest.fn(),
+  add: jest.fn(),
+  has: jest.fn(),
+  clear: jest.fn()
+}));
 
 // Define types for mocked responses
 interface MockResponse<T> {
@@ -82,11 +91,26 @@ describe('openaiService', () => {
   });
 
   describe('generateWordDescription', () => {
-    test('returns content from a successful API call', async () => {
-      const mockContent = 'A description of the test word';
-      setupMockFetchSuccess({ content: mockContent });
+    test('returns cached content when available', async () => {
+      const cachedContent = 'Cached description';
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(cachedContent);
+      
+      const result = await openaiService.generateWordDescription('test', 'English');
+      
+      expect(result).toBe(cachedContent);
+      expect(descriptionCache.get).toHaveBeenCalledWith('test', 'English');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
 
-      const result = await openaiService.generateWordDescription('test');
+    test('forwards to generateMultilingualWordDescription when no cache', async () => {
+      const mockContent = 'A description of the test word';
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(null);
+      setupMockFetchSuccess({ 
+        content: mockContent,
+        tokenUsage: { prompt: 10, completion: 5, total: 15 }
+      });
+
+      const result = await openaiService.generateWordDescription('test', 'English');
       
       expect(result).toBe(mockContent);
       expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
@@ -95,18 +119,100 @@ describe('openaiService', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'generateWordDescription',
+          action: 'generateMultilingualWordDescription',
           word: 'test',
+          language: 'en', // Should be mapped from 'English' to 'en'
         }),
       });
     });
 
     test('returns fallback message when API call fails', async () => {
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(null);
       (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      const result = await openaiService.generateWordDescription('test');
+      const result = await openaiService.generateWordDescription('test', 'English');
       
       expect(result).toBe('A common word in the English language.');
+    });
+
+    test('uses Swedish fallback message for Swedish language', async () => {
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(null);
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
+
+      const result = await openaiService.generateWordDescription('test', 'Swedish');
+      
+      expect(result).toBe('A common word in the Swedish language.');
+    });
+  });
+
+  describe('generateMultilingualWordDescription', () => {
+    test('returns cached content when available', async () => {
+      const cachedContent = 'Cached multilingual description';
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(cachedContent);
+      
+      const result = await openaiService.generateMultilingualWordDescription('test', 'English');
+      
+      expect(result.content).toBe(cachedContent);
+      expect(descriptionCache.get).toHaveBeenCalledWith('test', 'English');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test('makes API request with English language code when passed "English"', async () => {
+      const mockContent = 'English description';
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(null);
+      setupMockFetchSuccess({ 
+        content: mockContent,
+        tokenUsage: { prompt: 10, completion: 5, total: 15 }
+      });
+
+      const result = await openaiService.generateMultilingualWordDescription('test', 'English');
+      
+      expect(result.content).toBe(mockContent);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generateMultilingualWordDescription',
+          word: 'test',
+          language: 'en', // Should map to API language code
+        }),
+      });
+      expect(descriptionCache.add).toHaveBeenCalledWith('test', 'English', mockContent);
+    });
+
+    test('makes API request with Swedish language code when passed "Swedish"', async () => {
+      const mockContent = 'Swedish description';
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(null);
+      setupMockFetchSuccess({ 
+        content: mockContent,
+        tokenUsage: { prompt: 10, completion: 5, total: 15 }
+      });
+
+      const result = await openaiService.generateMultilingualWordDescription('test', 'Swedish');
+      
+      expect(result.content).toBe(mockContent);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generateMultilingualWordDescription',
+          word: 'test',
+          language: 'sv', // Should map to API language code
+        }),
+      });
+    });
+
+    test('returns fallback message when API call fails', async () => {
+      (descriptionCache.get as jest.Mock).mockReturnValueOnce(null);
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
+
+      const result = await openaiService.generateMultilingualWordDescription('test', 'English');
+      
+      expect(result.content).toBe('Failed to generate a description in English. Please try again.');
     });
   });
 
@@ -248,44 +354,6 @@ describe('openaiService', () => {
       await expect(openaiService.generateSampleSentence('word'))
         .rejects
         .toThrow(OpenAIServiceError);
-    });
-  });
-
-  describe('generateMultilingualWordDescription', () => {
-    test('returns content and token usage from a successful API call', async () => {
-      const mockResponse = {
-        content: 'Esta es una descripción en español.',
-        tokenUsage: {
-          prompt: 15,
-          completion: 10,
-          total: 25
-        }
-      };
-      setupMockFetchSuccess(mockResponse);
-
-      const result = await openaiService.generateMultilingualWordDescription('word', 'sv' as Language);
-      
-      expect(result).toEqual(mockResponse);
-      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'generateMultilingualWordDescription',
-          word: 'word',
-          language: 'sv',
-        }),
-      });
-    });
-
-    test('returns fallback message when API call fails', async () => {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
-
-      const result = await openaiService.generateMultilingualWordDescription('word', 'sv' as Language);
-      
-      expect(result).toHaveProperty('content');
-      expect(result.content).toContain('Failed to generate a description in Swedish');
     });
   });
 }); 

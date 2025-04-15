@@ -103,7 +103,7 @@
       "id": 4,
       "title": "Implement State Management for Language Selection",
       "description": "Update the application's state management to incorporate the selected description language.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         3
       ],
@@ -124,7 +124,41 @@
       ],
       "priority": "high",
       "details": "Modify the game's word selection logic to fetch a description from the OpenAI API after selecting a word. Pass the current language selection to the description generation function. Implement caching for the current round to avoid redundant API calls. Update the game state to store the generated description. Ensure the description is refreshed when a new word is selected.",
-      "testStrategy": "Create integration tests that verify the full flow from word selection to description display. Mock API responses to test various scenarios. Verify descriptions update when language is changed. Test error handling during description generation."
+      "testStrategy": "Create integration tests that verify the full flow from word selection to description display. Mock API responses to test various scenarios. Verify descriptions update when language is changed. Test error handling during description generation.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement OpenAI API Integration in Game Service",
+          "description": "Create a service method that calls the OpenAI API to generate descriptions for selected words based on the current language setting",
+          "dependencies": [],
+          "details": "1. Extend the existing OpenAI service to add a method `generateWordDescription(word: string, language: string): Promise<string>` that takes a word and language code as parameters\n2. Implement proper error handling for API failures with appropriate fallback descriptions\n3. Add language-specific prompting to get descriptions in the correct language\n4. Include request timeout handling and retry logic\n5. Test the integration with sample words in different languages\n6. Document the API usage patterns and rate limits",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 2,
+          "title": "Implement Description Caching Mechanism",
+          "description": "Create a caching system to store generated descriptions and avoid redundant API calls during gameplay",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Design a cache structure to store word-description pairs with language as part of the key\n2. Implement a `DescriptionCache` class with methods for adding, retrieving, and checking cache entries\n3. Add cache expiration logic to refresh descriptions after a certain period\n4. Implement methods to clear the cache between game rounds\n5. Add logging for cache hits/misses to monitor effectiveness\n6. Test cache behavior with mock API responses\n7. Ensure thread safety if the game supports concurrent sessions",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 3,
+          "title": "Connect Description Generation to Game Flow",
+          "description": "Integrate the description generation and caching into the core game logic to update game state with descriptions",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Modify the word selection logic to trigger description generation after selecting a word\n2. Update the game state model to include a `currentDescription` field\n3. Implement a method to refresh descriptions when a new word is selected\n4. Add logic to check the cache before making API calls\n5. Update the UI components to display the generated description\n6. Add loading states for when descriptions are being fetched\n7. Implement error handling to show fallback descriptions if generation fails\n8. Test the complete flow from word selection to description display\n9. Ensure descriptions update correctly when language is changed",
+          "status": "pending",
+          "parentTaskId": 5
+        }
+      ]
     },
     {
       "id": 6,

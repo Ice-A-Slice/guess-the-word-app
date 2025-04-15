@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Implement Description Generation Prompt Engineering
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Design and implement the prompt structure for generating word descriptions in multiple languages using GPT-4o.

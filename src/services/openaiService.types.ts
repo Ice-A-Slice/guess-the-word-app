@@ -21,7 +21,8 @@ export interface AIResponse {
 }
 
 /**
- * Supported languages for descriptions
+ * Supported languages for API requests
+ * These are the internal API codes, not the display names
  */
 export type Language = 'en' | 'sv';
 

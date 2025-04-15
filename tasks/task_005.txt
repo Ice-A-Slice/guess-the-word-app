@@ -9,3 +9,42 @@ Modify the game's word selection logic to fetch a description from the OpenAI AP
 
 # Test Strategy:
 Create integration tests that verify the full flow from word selection to description display. Mock API responses to test various scenarios. Verify descriptions update when language is changed. Test error handling during description generation.
+
+# Subtasks:
+## 1. Implement OpenAI API Integration in Game Service [pending]
+### Dependencies: None
+### Description: Create a service method that calls the OpenAI API to generate descriptions for selected words based on the current language setting
+### Details:
+1. Extend the existing OpenAI service to add a method `generateWordDescription(word: string, language: string): Promise<string>` that takes a word and language code as parameters
+2. Implement proper error handling for API failures with appropriate fallback descriptions
+3. Add language-specific prompting to get descriptions in the correct language
+4. Include request timeout handling and retry logic
+5. Test the integration with sample words in different languages
+6. Document the API usage patterns and rate limits
+
+## 2. Implement Description Caching Mechanism [pending]
+### Dependencies: 5.1
+### Description: Create a caching system to store generated descriptions and avoid redundant API calls during gameplay
+### Details:
+1. Design a cache structure to store word-description pairs with language as part of the key
+2. Implement a `DescriptionCache` class with methods for adding, retrieving, and checking cache entries
+3. Add cache expiration logic to refresh descriptions after a certain period
+4. Implement methods to clear the cache between game rounds
+5. Add logging for cache hits/misses to monitor effectiveness
+6. Test cache behavior with mock API responses
+7. Ensure thread safety if the game supports concurrent sessions
+
+## 3. Connect Description Generation to Game Flow [pending]
+### Dependencies: 5.1, 5.2
+### Description: Integrate the description generation and caching into the core game logic to update game state with descriptions
+### Details:
+1. Modify the word selection logic to trigger description generation after selecting a word
+2. Update the game state model to include a `currentDescription` field
+3. Implement a method to refresh descriptions when a new word is selected
+4. Add logic to check the cache before making API calls
+5. Update the UI components to display the generated description
+6. Add loading states for when descriptions are being fetched
+7. Implement error handling to show fallback descriptions if generation fails
+8. Test the complete flow from word selection to description display
+9. Ensure descriptions update correctly when language is changed
+
