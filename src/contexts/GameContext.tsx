@@ -52,6 +52,7 @@ export interface GameState {
   
   // User preferences
   difficulty: 'easy' | 'medium' | 'hard' | 'all';
+  descriptionLanguage: string; // Language for word descriptions
   
   // Session management
   hasSavedSession: boolean;
@@ -68,6 +69,7 @@ export type GameAction =
   | { type: 'SKIP_WORD' }
   | { type: 'SET_DIFFICULTY'; payload: 'easy' | 'medium' | 'hard' | 'all' }
   | { type: 'SET_MAX_SKIPS'; payload: number }
+  | { type: 'SET_DESCRIPTION_LANGUAGE'; payload: string }
   | { type: 'RESET_GAME' }
   | { type: 'LOAD_SAVED_STATE'; payload: Partial<GameState> }
   | { type: 'CONTINUE_SESSION' }
@@ -94,6 +96,7 @@ const initialState: GameState = {
   },
   maxSkipsPerGame: 5, // Default value
   difficulty: 'all',
+  descriptionLanguage: 'English', // Default language
   hasSavedSession: false,
 };
 
@@ -216,6 +219,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         difficulty: action.payload,
       };
       
+    case 'SET_DESCRIPTION_LANGUAGE':
+      return {
+        ...state,
+        descriptionLanguage: action.payload,
+      };
+      
     case 'SET_MAX_SKIPS':
       return {
         ...state,
@@ -327,4 +336,44 @@ export function GameProvider({ children }: GameProviderProps) {
       </GameDispatchContext.Provider>
     </GameStateContext.Provider>
   );
+}
+
+// Custom hook for using the game context
+export function useGameContext() {
+  const state = React.useContext(GameStateContext);
+  const dispatch = React.useContext(GameDispatchContext);
+  
+  if (state === undefined || dispatch === undefined) {
+    throw new Error('useGameContext must be used within a GameProvider');
+  }
+  
+  // Create action functions
+  const startGame = () => dispatch({ type: 'START_GAME' });
+  const pauseGame = () => dispatch({ type: 'PAUSE_GAME' });
+  const resumeGame = () => dispatch({ type: 'RESUME_GAME' });
+  const endGame = () => dispatch({ type: 'END_GAME' });
+  const setWord = (word: Word) => dispatch({ type: 'SET_WORD', payload: word });
+  const correctGuess = (points: number, word: Word) => dispatch({ type: 'CORRECT_GUESS', payload: { points, word } });
+  const skipWord = () => dispatch({ type: 'SKIP_WORD' });
+  const setDifficulty = (difficulty: 'easy' | 'medium' | 'hard' | 'all') => dispatch({ type: 'SET_DIFFICULTY', payload: difficulty });
+  const setMaxSkips = (maxSkips: number) => dispatch({ type: 'SET_MAX_SKIPS', payload: maxSkips });
+  const setDescriptionLanguage = (language: string) => dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: language });
+  const resetGame = () => dispatch({ type: 'RESET_GAME' });
+  const continueSession = () => dispatch({ type: 'CONTINUE_SESSION' });
+  
+  return {
+    ...state,
+    startGame,
+    pauseGame,
+    resumeGame,
+    endGame,
+    setWord,
+    correctGuess,
+    skipWord,
+    setDifficulty,
+    setMaxSkips,
+    setDescriptionLanguage,
+    resetGame,
+    continueSession,
+  };
 } 
