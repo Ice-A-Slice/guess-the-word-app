@@ -30,6 +30,7 @@ export const saveGameState = (state: GameState): void => {
       longestStreak: number;
       difficulty: GameState['difficulty'];
       maxSkipsPerGame: number;
+      descriptionLanguage: string;
     } = {
       status: state.status,
       score: state.score,
@@ -39,6 +40,7 @@ export const saveGameState = (state: GameState): void => {
       longestStreak: state.longestStreak,
       difficulty: state.difficulty,
       maxSkipsPerGame: state.maxSkipsPerGame,
+      descriptionLanguage: state.descriptionLanguage,
     };
     
     localStorage.setItem(STORAGE_KEYS.SESSION_STATE, JSON.stringify(stateToSave));

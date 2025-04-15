@@ -221,6 +221,9 @@ describe('GameContext', () => {
     
     // Check language after action
     expect(screen.getByTestId('language').textContent).toBe('Spanish');
+    
+    // Verify the saveGameState was called to persist the language change
+    expect(localStorage.saveGameState).toHaveBeenCalled();
   });
 });
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGameWithWordSelection } from '@/hooks';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'all';
 
@@ -125,6 +126,15 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
               <div className="absolute top-2 right-10 text-sm text-gray-500">
                 Current: {getSkipsLabel(maxSkips)}
               </div>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description Language:
+            </label>
+            <div className="p-2 border border-gray-300 rounded-md shadow-sm">
+              <LanguageSelector className="justify-center" vertical />
             </div>
           </div>
           
