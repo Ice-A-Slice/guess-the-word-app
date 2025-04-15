@@ -109,7 +109,8 @@
       ],
       "priority": "medium",
       "details": "Extend the existing game state to include the selected language (default to English). Create actions/reducers for updating the language selection. Ensure the language selection persists during a game session. Connect the language selection UI component to the state management system. Implement proper state initialization and update logic.",
-      "testStrategy": "Write unit tests for state management functions. Verify state updates correctly when language selection changes. Test that initial state loads with default language. Ensure state consistency across game interactions."
+      "testStrategy": "Write unit tests for state management functions. Verify state updates correctly when language selection changes. Test that initial state loads with default language. Ensure state consistency across game interactions.",
+      "subtasks": []
     },
     {
       "id": 5,

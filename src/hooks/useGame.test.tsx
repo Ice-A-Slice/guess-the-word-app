@@ -2,8 +2,26 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { GameProvider } from '@/contexts';
-import { useGameWithWordSelection, useGame } from './useGame';
+import { GameProvider } from '@/contexts/GameContext';
+import * as localStorage from '@/utils/localStorage';
+import { useGameState, useGameWithWordSelection } from './useGame';
+
+// Mocking localStorage functions
+jest.mock('@/utils/localStorage', () => ({
+  loadGameState: jest.fn(),
+  saveGameState: jest.fn(),
+  clearGameState: jest.fn(),
+  hasSavedSession: jest.fn(),
+  saveSessionStats: jest.fn(),
+  loadSessionStats: jest.fn(),
+  loadLanguagePreference: jest.fn(() => 'English'),
+  saveLanguagePreference: jest.fn(),
+  STORAGE_KEYS: {
+    SESSION_STATE: 'guessTheWord_sessionState',
+    SESSION_STATS: 'guessTheWord_sessionStats',
+    LANGUAGE_PREFERENCE: 'guessTheWord_languagePreference'
+  }
+}));
 
 // Mockdata for testing
 const mockWord = {
@@ -22,31 +40,65 @@ jest.mock('./useWordSelection', () => ({
   })),
 }));
 
-// Simplified test component to just show game state
+// Test component to display the game state
 const TestGameState = () => {
-  const { status, score, difficulty } = useGame();
-  
+  const gameState = useGameState();
   return (
     <div>
-      <div data-testid="game-status">{status}</div>
-      <div data-testid="game-score">{score}</div>
-      <div data-testid="game-difficulty">{difficulty}</div>
+      <div data-testid="status">{gameState.status}</div>
+      <div data-testid="score">{gameState.score}</div>
+      <div data-testid="difficulty">{gameState.difficulty}</div>
     </div>
   );
 };
 
-describe('Game hooks', () => {
-  test('useGame provides initial state', () => {
+// This component is no longer used but kept for reference
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const TestWordSelection = () => {
+  const { currentWord, getNextWord, isLoading, error } = useGameWithWordSelection();
+  return (
+    <div>
+      <div data-testid="word">{currentWord?.word || 'no word'}</div>
+      <div data-testid="loading">{isLoading ? 'loading' : 'not loading'}</div>
+      <div data-testid="error">{error || 'no error'}</div>
+      <button data-testid="select-word" onClick={() => getNextWord()}>
+        Select Word
+      </button>
+    </div>
+  );
+};
+
+describe('useGame Hooks', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock window.localStorage if needed
+    const mockLocalStorage = {
+      clear: jest.fn(),
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn()
+    };
+    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+  });
+
+  test('useGameState should return the initial game state', () => {
+    // Set loadGameState to return null to simulate no saved state
+    (localStorage.loadGameState as jest.Mock).mockReturnValueOnce(null);
+    (localStorage.hasSavedSession as jest.Mock).mockReturnValueOnce(false);
+    
     render(
       <GameProvider>
         <TestGameState />
       </GameProvider>
     );
     
-    expect(screen.getByTestId('game-status')).toHaveTextContent('idle');
-    expect(screen.getByTestId('game-score')).toHaveTextContent('0');
-    expect(screen.getByTestId('game-difficulty')).toHaveTextContent('all');
+    // Initial state should be 'idle', not 'paused'
+    expect(screen.getByTestId('status').textContent).toBe('idle');
+    expect(screen.getByTestId('score').textContent).toBe('0');
+    expect(screen.getByTestId('difficulty').textContent).toBe('all');
   });
+
+  // ... other tests remain unchanged
 });
 
 // Only test the very basic functionality of useGameWithWordSelection

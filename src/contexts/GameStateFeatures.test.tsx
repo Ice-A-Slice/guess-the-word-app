@@ -12,6 +12,13 @@ jest.mock('@/utils/localStorage', () => ({
   loadSessionStats: jest.fn(() => null),
   hasSavedSession: jest.fn(() => false),
   clearGameState: jest.fn(),
+  loadLanguagePreference: jest.fn(() => 'English'),
+  saveLanguagePreference: jest.fn(),
+  STORAGE_KEYS: {
+    SESSION_STATE: 'guessTheWord_sessionState',
+    SESSION_STATS: 'guessTheWord_sessionStats',
+    LANGUAGE_PREFERENCE: 'guessTheWord_languagePreference'
+  }
 }));
 
 // Simple test component that uses the game state

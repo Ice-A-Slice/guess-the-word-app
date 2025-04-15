@@ -50,6 +50,7 @@ const sampleGameState = {
   longestStreak: 5,
   difficulty: 'medium' as 'easy' | 'medium' | 'hard' | 'all',
   maxSkipsPerGame: 5,
+  descriptionLanguage: 'English'
 };
 
 // Sample session stats for testing
@@ -76,6 +77,7 @@ describe('localStorage utilities', () => {
       longestStreak: 5,
       difficulty: 'medium',
       maxSkipsPerGame: 5,
+      descriptionLanguage: 'English'
     });
   });
   

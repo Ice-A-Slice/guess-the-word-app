@@ -1,9 +1,31 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { GameProvider, GameStateContext, GameDispatchContext, useGameContext } from './GameContext';
+import { GameProvider, GameStateContext, GameDispatchContext, useGameContext, DescriptionLanguage } from './GameContext';
 import { useGameState, useGameDispatch } from '@/hooks/useGame';
 import { Word } from '@/types';
 import * as localStorage from '@/utils/localStorage';
+
+// Ersätt renderHook med en egen hjälpfunktion eftersom modulen inte finns tillgänglig
+const renderGameContextHook = () => {
+  const hookResult = { current: {} as ReturnType<typeof useGameContext> };
+  
+  const TestHookComponent = () => {
+    hookResult.current = useGameContext();
+    return null;
+  };
+  
+  const wrapper = render(
+    <GameProvider>
+      <TestHookComponent />
+    </GameProvider>
+  );
+  
+  return {
+    result: hookResult,
+    unmount: wrapper.unmount,
+    rerender: wrapper.rerender
+  };
+};
 
 // Mock word object to use in tests
 const mockWord: Word = {
@@ -60,7 +82,7 @@ const TestComponent = () => {
       <button
         data-testid="set-language-button"
         onClick={() => 
-          dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: 'Spanish' })
+          dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: 'Swedish' as DescriptionLanguage })
         }
       >
         Set Language
@@ -86,6 +108,13 @@ jest.mock('@/utils/localStorage', () => ({
   loadSessionStats: jest.fn(),
   hasSavedSession: jest.fn(),
   clearGameState: jest.fn(),
+  loadLanguagePreference: jest.fn(() => 'English'),
+  saveLanguagePreference: jest.fn(),
+  STORAGE_KEYS: {
+    SESSION_STATE: 'guessTheWord_sessionState',
+    SESSION_STATS: 'guessTheWord_sessionStats',
+    LANGUAGE_PREFERENCE: 'guessTheWord_languagePreference'
+  }
 }));
 
 // Test component to access context values
@@ -126,9 +155,9 @@ const TestContextHook = () => {
       <p data-testid="hook-language">{descriptionLanguage}</p>
       <button 
         data-testid="hook-set-language" 
-        onClick={() => setDescriptionLanguage('French')}
+        onClick={() => setDescriptionLanguage('Swedish')}
       >
-        Set To French
+        Set To Swedish
       </button>
     </div>
   );
@@ -216,11 +245,11 @@ describe('GameContext', () => {
     // Initial language should be English
     expect(screen.getByTestId('language').textContent).toBe('English');
     
-    // Click the set language button to change to Spanish
+    // Click the set language button to change to Swedish
     fireEvent.click(screen.getByTestId('set-language-button'));
     
     // Check language after action
-    expect(screen.getByTestId('language').textContent).toBe('Spanish');
+    expect(screen.getByTestId('language').textContent).toBe('Swedish');
     
     // Verify the saveGameState was called to persist the language change
     expect(localStorage.saveGameState).toHaveBeenCalled();
@@ -342,11 +371,11 @@ describe('useGameContext hook', () => {
     // Initial language should be English
     expect(screen.getByTestId('hook-language').textContent).toBe('English');
     
-    // Click button to change language to French
+    // Click button to change language to Swedish
     fireEvent.click(screen.getByTestId('hook-set-language'));
     
-    // Language should now be French
-    expect(screen.getByTestId('hook-language').textContent).toBe('French');
+    // Language should now be Swedish
+    expect(screen.getByTestId('hook-language').textContent).toBe('Swedish');
   });
   
   test('throws error when hook is used outside provider', () => {
@@ -360,5 +389,79 @@ describe('useGameContext hook', () => {
     
     // Restore console.error
     console.error = originalError;
+  });
+});
+
+// Add test for language selection
+describe('Language Selection', () => {
+  beforeEach(() => {
+    // Clear mocks but don't call localStorage.clear() 
+    jest.clearAllMocks();
+    // Mock window.localStorage.clear() om det behövs
+    const mockLocalStorage = {
+      clear: jest.fn(),
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn()
+    };
+    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+  });
+
+  test('should initialize with default language (English)', () => {
+    const { result } = renderGameContextHook();
+    
+    expect(result.current.descriptionLanguage).toBe('English');
+  });
+
+  test('should change language when setDescriptionLanguage is called', () => {
+    const { result } = renderGameContextHook();
+    
+    act(() => {
+      result.current.setDescriptionLanguage('Swedish');
+    });
+    
+    expect(result.current.descriptionLanguage).toBe('Swedish');
+  });
+
+  test('should save language preference to localStorage when changed', () => {
+    // Use an import from a variable instead of require
+    const saveLanguagePreferenceSpy = jest.spyOn(localStorage, 'saveLanguagePreference');
+    
+    const { result } = renderGameContextHook();
+    
+    act(() => {
+      result.current.setDescriptionLanguage('Swedish');
+    });
+    
+    expect(saveLanguagePreferenceSpy).toHaveBeenCalledWith('Swedish');
+  });
+
+  test('should load language preference from localStorage on initialization', () => {
+    // Set up mocked localStorage
+    (localStorage.loadLanguagePreference as jest.Mock).mockReturnValueOnce('Swedish');
+    
+    const { result } = renderGameContextHook();
+    
+    // Verify the loaded preference is used
+    expect(result.current.descriptionLanguage).toBe('Swedish');
+  });
+
+  test('should persist language preference across game sessions', () => {
+    // First session: set the language
+    const { result, unmount } = renderGameContextHook();
+    
+    act(() => {
+      result.current.setDescriptionLanguage('Swedish');
+    });
+    
+    unmount();
+    
+    // Mock behaviour of localStorage between sessions
+    (localStorage.loadLanguagePreference as jest.Mock).mockReturnValueOnce('Swedish');
+    
+    // Second session: verify language is still set
+    const { result: result2 } = renderGameContextHook();
+    
+    expect(result2.current.descriptionLanguage).toBe('Swedish');
   });
 }); 

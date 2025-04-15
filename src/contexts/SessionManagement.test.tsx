@@ -3,14 +3,21 @@ import { render, act } from '@testing-library/react';
 import { GameProvider, GameStateContext, GameDispatchContext } from './GameContext';
 import * as localStorage from '@/utils/localStorage';
 
-// Mock the localStorage utilities
+// Mock localStorage functions
 jest.mock('@/utils/localStorage', () => ({
   saveGameState: jest.fn(),
   saveSessionStats: jest.fn(),
-  loadGameState: jest.fn(),
-  loadSessionStats: jest.fn(),
+  loadGameState: jest.fn(() => null),
+  loadSessionStats: jest.fn(() => null),
   clearGameState: jest.fn(),
-  hasSavedSession: jest.fn(),
+  hasSavedSession: jest.fn(() => false),
+  loadLanguagePreference: jest.fn(() => 'English'),
+  saveLanguagePreference: jest.fn(),
+  STORAGE_KEYS: {
+    SESSION_STATE: 'guessTheWord_sessionState',
+    SESSION_STATS: 'guessTheWord_sessionStats',
+    LANGUAGE_PREFERENCE: 'guessTheWord_languagePreference'
+  }
 }));
 
 // Test component that uses the context
