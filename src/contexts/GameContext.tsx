@@ -8,8 +8,13 @@ import {
   loadGameState,
   loadSessionStats,
   clearGameState,
-  hasSavedSession
+  hasSavedSession,
+  loadLanguagePreference,
+  saveLanguagePreference
 } from '@/utils/localStorage';
+
+// Language options
+export type DescriptionLanguage = 'English' | 'Swedish';
 
 // Game State Interface
 export interface GameState {
@@ -52,7 +57,7 @@ export interface GameState {
   
   // User preferences
   difficulty: 'easy' | 'medium' | 'hard' | 'all';
-  descriptionLanguage: string; // Language for word descriptions
+  descriptionLanguage: DescriptionLanguage; // Language for word descriptions
   
   // Session management
   hasSavedSession: boolean;
@@ -69,7 +74,7 @@ export type GameAction =
   | { type: 'SKIP_WORD' }
   | { type: 'SET_DIFFICULTY'; payload: 'easy' | 'medium' | 'hard' | 'all' }
   | { type: 'SET_MAX_SKIPS'; payload: number }
-  | { type: 'SET_DESCRIPTION_LANGUAGE'; payload: string }
+  | { type: 'SET_DESCRIPTION_LANGUAGE'; payload: DescriptionLanguage }
   | { type: 'RESET_GAME' }
   | { type: 'LOAD_SAVED_STATE'; payload: Partial<GameState> }
   | { type: 'CONTINUE_SESSION' }
@@ -220,9 +225,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
       
     case 'SET_DESCRIPTION_LANGUAGE': {
+      const newLanguage = action.payload;
+      
+      // Explicitly call saveLanguagePreference
+      saveLanguagePreference(newLanguage);
+      
       const newState = {
         ...state,
-        descriptionLanguage: action.payload,
+        descriptionLanguage: newLanguage,
       };
       
       // Save state to localStorage when language changes
@@ -281,22 +291,34 @@ interface GameProviderProps {
 }
 
 export function GameProvider({ children }: GameProviderProps) {
-  // Initialize with saved state if available
   const getInitialState = (): GameState => {
-    if (hasSavedSession()) {
-      const savedState = loadGameState();
-      const savedStats = loadSessionStats();
-      
-      if (savedState) {
-        return {
-          ...initialState,
-          ...savedState,
-          sessionStats: savedStats || initialState.sessionStats,
-        };
-      }
-    }
+    // Check for saved session first
+    const savedSession = hasSavedSession();
     
-    return initialState;
+    // Load saved stats either way
+    const savedStats = loadSessionStats() || initialState.sessionStats;
+    
+    if (savedSession) {
+      // Resume previous session
+      const savedState = loadGameState() || {};
+      
+      return {
+        ...initialState,
+        ...savedState,
+        sessionStats: savedStats,
+        hasSavedSession: true,
+      };
+    } else {
+      // Start fresh with saved stats and preferences
+      const languagePreference = loadLanguagePreference(); // Load language preference
+      
+      return {
+        ...initialState,
+        sessionStats: savedStats,
+        descriptionLanguage: languagePreference, // Use the saved language preference
+        hasSavedSession: false,
+      };
+    }
   };
   
   const [state, dispatch] = useReducer(gameReducer, getInitialState());
@@ -363,7 +385,7 @@ export function useGameContext() {
   const skipWord = () => dispatch({ type: 'SKIP_WORD' });
   const setDifficulty = (difficulty: 'easy' | 'medium' | 'hard' | 'all') => dispatch({ type: 'SET_DIFFICULTY', payload: difficulty });
   const setMaxSkips = (maxSkips: number) => dispatch({ type: 'SET_MAX_SKIPS', payload: maxSkips });
-  const setDescriptionLanguage = (language: string) => dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: language });
+  const setDescriptionLanguage = (language: DescriptionLanguage) => dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: language });
   const resetGame = () => dispatch({ type: 'RESET_GAME' });
   const continueSession = () => dispatch({ type: 'CONTINUE_SESSION' });
   

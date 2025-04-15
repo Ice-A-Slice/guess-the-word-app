@@ -1,17 +1,16 @@
 'use client';
 
-import { GameState } from '@/contexts/GameContext';
+import { GameState, DescriptionLanguage } from '@/contexts/GameContext';
 
 // Keys for localStorage
 export const STORAGE_KEYS = {
-
   SESSION_STATE: 'guessTheWord_sessionState',
   SESSION_STATS: 'guessTheWord_sessionStats',
+  LANGUAGE_PREFERENCE: 'guessTheWord_languagePreference',
 };
 
 // Helper functions for checking if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
-
 
 /**
  * Save the current game state to localStorage
@@ -30,7 +29,7 @@ export const saveGameState = (state: GameState): void => {
       longestStreak: number;
       difficulty: GameState['difficulty'];
       maxSkipsPerGame: number;
-      descriptionLanguage: string;
+      descriptionLanguage: DescriptionLanguage;
     } = {
       status: state.status,
       score: state.score,
@@ -44,8 +43,42 @@ export const saveGameState = (state: GameState): void => {
     };
     
     localStorage.setItem(STORAGE_KEYS.SESSION_STATE, JSON.stringify(stateToSave));
+    
+    // Also save language preference separately for persistent access
+    saveLanguagePreference(state.descriptionLanguage);
   } catch (error) {
     console.error('Failed to save game state to localStorage:', error);
+  }
+};
+
+/**
+ * Save the language preference separately
+ */
+export const saveLanguagePreference = (language: DescriptionLanguage): void => {
+  if (!isBrowser) return;
+  
+  try {
+    localStorage.setItem(STORAGE_KEYS.LANGUAGE_PREFERENCE, language);
+  } catch (error) {
+    console.error('Failed to save language preference to localStorage:', error);
+  }
+};
+
+/**
+ * Load the saved language preference
+ */
+export const loadLanguagePreference = (): DescriptionLanguage => {
+  if (!isBrowser) return 'English';
+  
+  try {
+    const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE_PREFERENCE);
+    if (savedLanguage === 'English' || savedLanguage === 'Swedish') {
+      return savedLanguage;
+    }
+    return 'English'; // Default to English if no valid preference is found
+  } catch (error) {
+    console.error('Failed to load language preference from localStorage:', error);
+    return 'English';
   }
 };
 
@@ -72,7 +105,14 @@ export const loadGameState = (): Partial<GameState> | null => {
     const savedState = localStorage.getItem(STORAGE_KEYS.SESSION_STATE);
     if (!savedState) return null;
     
-    return JSON.parse(savedState);
+    const parsedState = JSON.parse(savedState);
+    
+    // Ensure descriptionLanguage is valid
+    if (parsedState.descriptionLanguage !== 'English' && parsedState.descriptionLanguage !== 'Swedish') {
+      parsedState.descriptionLanguage = loadLanguagePreference();
+    }
+    
+    return parsedState;
   } catch (error) {
     console.error('Failed to load game state from localStorage:', error);
     return null;

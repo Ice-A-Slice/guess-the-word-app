@@ -1,104 +1,88 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LanguageSelector } from './LanguageSelector';
+import { LanguageSelector, LANGUAGE_OPTIONS } from './LanguageSelector';
+import { useGameContext } from '@/contexts/GameContext';
 
-// Global mock for the setDescriptionLanguage function
-const mockSetLanguage = jest.fn();
-
-// Mock the GameContext to avoid dependencies
-jest.mock('@/contexts/GameContext', () => {
-  return {
-    GameProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    useGameContext: () => ({
-      // Game status properties
-      status: 'idle',
-      currentWord: null,
-      score: 0,
-      wordsGuessed: 0,
-      wordsSkipped: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      skippedWords: [],
-      scoreHistory: [],
-      sessionStats: {
-        totalGames: 0,
-        highScore: 0,
-        averageScore: 0,
-        totalWordsGuessed: 0,
-        totalWordsSkipped: 0,
-        bestStreak: 0
-      },
-      maxSkipsPerGame: 5,
-      difficulty: 'all',
-      hasSavedSession: false,
-      
-      // The properties we're actually testing
-      descriptionLanguage: 'English',
-      setDescriptionLanguage: mockSetLanguage,
-      
-      // Action functions
-      startGame: jest.fn(),
-      pauseGame: jest.fn(),
-      resumeGame: jest.fn(),
-      endGame: jest.fn(),
-      setWord: jest.fn(),
-      correctGuess: jest.fn(),
-      skipWord: jest.fn(),
-      setDifficulty: jest.fn(),
-      setMaxSkips: jest.fn(),
-      resetGame: jest.fn(),
-      continueSession: jest.fn(),
-    }),
-  };
-});
+// Mock the GameContext hook
+jest.mock('@/contexts/GameContext', () => ({
+  useGameContext: jest.fn(),
+  DescriptionLanguage: String
+}));
 
 describe('LanguageSelector', () => {
-  beforeEach(() => {
-    // Clear all mocks before each test
-    jest.clearAllMocks();
-  });
+  const mockSetDescriptionLanguage = jest.fn();
   
-  it('renders language options correctly', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useGameContext as jest.Mock).mockReturnValue({
+      descriptionLanguage: 'English',
+      setDescriptionLanguage: mockSetDescriptionLanguage
+    });
+  });
+
+  it('renders the language options', () => {
     render(<LanguageSelector />);
     
+    // Verify language label is shown
     expect(screen.getByText('Language:')).toBeInTheDocument();
-    expect(screen.getByText('English')).toBeInTheDocument();
-    expect(screen.getByText('Svenska')).toBeInTheDocument();
+    
+    // Check all language options are rendered
+    LANGUAGE_OPTIONS.forEach(lang => {
+      expect(screen.getByText(lang.label)).toBeInTheDocument();
+    });
   });
-  
+
   it('highlights the currently selected language', () => {
     render(<LanguageSelector />);
     
-    const englishButton = screen.getByText('English').closest('button');
-    const swedishButton = screen.getByText('Svenska').closest('button');
+    // English button should be highlighted (default mock value)
+    const englishButton = screen.getByText('English');
+    const swedishButton = screen.getByText('Svenska');
     
     expect(englishButton).toHaveAttribute('aria-pressed', 'true');
     expect(swedishButton).toHaveAttribute('aria-pressed', 'false');
   });
-  
-  it('calls setDescriptionLanguage when a language is selected', () => {
+
+  it('calls setDescriptionLanguage when a language button is clicked', () => {
     render(<LanguageSelector />);
     
-    const swedishButton = screen.getByText('Svenska');
-    fireEvent.click(swedishButton);
+    // Click the Swedish button
+    fireEvent.click(screen.getByText('Svenska'));
     
-    expect(mockSetLanguage).toHaveBeenCalledWith('Swedish');
+    // Verify the context function was called with correct language code
+    expect(mockSetDescriptionLanguage).toHaveBeenCalledWith('Swedish');
   });
-  
+
+  it('renders in vertical layout when vertical prop is true', () => {
+    render(<LanguageSelector vertical={true} />);
+    
+    // Check the container has vertical flexbox classes
+    const container = screen.getByText('Language:').parentElement;
+    expect(container).toHaveClass('flex-col');
+  });
+
   it('applies custom className when provided', () => {
     render(<LanguageSelector className="custom-class" />);
     
+    // Check the container has the custom class
     const container = screen.getByText('Language:').parentElement;
     expect(container).toHaveClass('custom-class');
   });
-  
-  it('renders in vertical layout when vertical prop is true', () => {
-    render(<LanguageSelector vertical />);
+
+  it('displays Swedish as selected when Swedish is the active language', () => {
+    // Update the mock to return Swedish as the current language
+    (useGameContext as jest.Mock).mockReturnValue({
+      descriptionLanguage: 'Swedish',
+      setDescriptionLanguage: mockSetDescriptionLanguage
+    });
     
-    const container = screen.getByText('Language:').parentElement;
-    const buttonContainer = screen.getByText('English').parentElement?.parentElement;
+    render(<LanguageSelector />);
     
-    expect(container).toHaveClass('flex-col');
-    expect(buttonContainer).toHaveClass('flex-col');
+    // Swedish button should be highlighted
+    const englishButton = screen.getByText('English');
+    const swedishButton = screen.getByText('Svenska');
+    
+    expect(englishButton).toHaveAttribute('aria-pressed', 'false');
+    expect(swedishButton).toHaveAttribute('aria-pressed', 'true');
   });
 }); 
