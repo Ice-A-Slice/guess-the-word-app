@@ -1,5 +1,5 @@
 import openaiService from './openaiService';
-import { OpenAIServiceError } from './openaiService.types';
+import { OpenAIServiceError, Language } from './openaiService.types';
 
 // Define types for mocked responses
 interface MockResponse<T> {
@@ -263,7 +263,7 @@ describe('openaiService', () => {
       };
       setupMockFetchSuccess(mockResponse);
 
-      const result = await openaiService.generateMultilingualWordDescription('word', 'Spanish');
+      const result = await openaiService.generateMultilingualWordDescription('word', 'sv' as Language);
       
       expect(result).toEqual(mockResponse);
       expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
@@ -274,17 +274,18 @@ describe('openaiService', () => {
         body: JSON.stringify({
           action: 'generateMultilingualWordDescription',
           word: 'word',
-          language: 'Spanish',
+          language: 'sv',
         }),
       });
     });
 
-    test('throws error when API call fails', async () => {
+    test('returns fallback message when API call fails', async () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      await expect(openaiService.generateMultilingualWordDescription('word', 'French'))
-        .rejects
-        .toThrow(OpenAIServiceError);
+      const result = await openaiService.generateMultilingualWordDescription('word', 'sv' as Language);
+      
+      expect(result).toHaveProperty('content');
+      expect(result.content).toContain('Failed to generate a description in Swedish');
     });
   });
 }); 

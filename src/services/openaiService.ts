@@ -1,4 +1,4 @@
-import { AIResponse, OpenAIServiceError } from './openaiService.types';
+import { AIResponse, OpenAIServiceError, Language, LANGUAGE_NAMES } from './openaiService.types';
 
 /**
  * Custom error class for OpenAI service errors
@@ -143,22 +143,26 @@ const openaiService = {
   },
 
   /**
-   * Generates a word description in the specified language
+   * Generate a multilingual description for a word
+   * @param word The word to generate a description for
+   * @param language The target language for the description
+   * @returns A description of the word in the specified language
    */
-  generateMultilingualWordDescription: async (word: string, language: string): Promise<AIResponse> => {
+  generateMultilingualWordDescription: async (word: string, language: Language): Promise<AIResponse> => {
     try {
-      const result = await openaiService._makeAPIRequest('generateMultilingualWordDescription', { word, language });
+      const result = await openaiService._makeAPIRequest('generateMultilingualWordDescription', { 
+        word, 
+        language 
+      });
       return {
         content: result.content,
         tokenUsage: result.tokenUsage
       };
     } catch (error) {
-      console.error(`Error generating ${language} description:`, error);
-      throw new OpenAIServiceError(
-        error instanceof Error 
-          ? `Failed to generate ${language} description: ${error.message}` 
-          : `Failed to generate ${language} description`
-      );
+      console.error(`Error generating ${LANGUAGE_NAMES[language]} description:`, error);
+      return { 
+        content: `Failed to generate a description in ${LANGUAGE_NAMES[language]}. Please try again.` 
+      };
     }
   }
 };

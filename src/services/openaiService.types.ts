@@ -19,3 +19,16 @@ export interface AIResponse {
     total: number;
   };
 }
+
+/**
+ * Supported languages for descriptions
+ */
+export type Language = 'en' | 'sv';
+
+/**
+ * Human-readable language names
+ */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  en: 'English',
+  sv: 'Swedish'
+};
