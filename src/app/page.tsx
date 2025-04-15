@@ -6,7 +6,7 @@ import { useGame } from '@/hooks';
 import { useEffect } from 'react';
 
 export default function Home() {
-  // Access the game state directly from context
+  // Access the game state directly from contextt
   const game = useGame();
   
   // Add effect to set viewport height for mobile browsers
