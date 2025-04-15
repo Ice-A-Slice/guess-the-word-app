@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { GameProvider, GameStateContext, GameDispatchContext } from './GameContext';
+import { GameProvider, GameStateContext, GameDispatchContext, useGameContext } from './GameContext';
 import { useGameState, useGameDispatch } from '@/hooks/useGame';
 import { Word } from '@/types';
 import * as localStorage from '@/utils/localStorage';
@@ -22,6 +22,7 @@ const TestComponent = () => {
     <div>
       <h1 data-testid="status">{state.status}</h1>
       <p data-testid="score">{state.score}</p>
+      <p data-testid="language">{state.descriptionLanguage}</p>
       
       <button
         data-testid="start-button"
@@ -54,6 +55,15 @@ const TestComponent = () => {
         }
       >
         Correct Guess
+      </button>
+      
+      <button
+        data-testid="set-language-button"
+        onClick={() => 
+          dispatch({ type: 'SET_DESCRIPTION_LANGUAGE', payload: 'Spanish' })
+        }
+      >
+        Set Language
       </button>
     </div>
   );
@@ -99,6 +109,26 @@ const TestConsumer = () => {
         onClick={() => dispatch?.({ type: 'END_GAME' })}
       >
         End Game
+      </button>
+    </div>
+  );
+};
+
+// Test component to test the new useGameContext hook
+const TestContextHook = () => {
+  const { 
+    descriptionLanguage, 
+    setDescriptionLanguage 
+  } = useGameContext();
+  
+  return (
+    <div>
+      <p data-testid="hook-language">{descriptionLanguage}</p>
+      <button 
+        data-testid="hook-set-language" 
+        onClick={() => setDescriptionLanguage('French')}
+      >
+        Set To French
       </button>
     </div>
   );
@@ -171,6 +201,26 @@ describe('GameContext', () => {
     
     // Check that score increased
     expect(screen.getByTestId('score').textContent).toBe('2');
+  });
+  
+  test('initializes with English as default language', () => {
+    setup();
+    
+    // Check the initial language is 'English'
+    expect(screen.getByTestId('language').textContent).toBe('English');
+  });
+  
+  test('dispatches SET_DESCRIPTION_LANGUAGE action correctly', () => {
+    setup();
+    
+    // Initial language should be English
+    expect(screen.getByTestId('language').textContent).toBe('English');
+    
+    // Click the set language button to change to Spanish
+    fireEvent.click(screen.getByTestId('set-language-button'));
+    
+    // Check language after action
+    expect(screen.getByTestId('language').textContent).toBe('Spanish');
   });
 });
 
@@ -263,5 +313,49 @@ describe('GameProvider with localStorage integration', () => {
     
     // Should update session stats
     expect(localStorage.saveSessionStats).toHaveBeenCalled();
+  });
+});
+
+// New test suite for the useGameContext hook
+describe('useGameContext hook', () => {
+  test('provides access to descriptionLanguage state', () => {
+    render(
+      <GameProvider>
+        <TestContextHook />
+      </GameProvider>
+    );
+    
+    // Initial language should be English
+    expect(screen.getByTestId('hook-language').textContent).toBe('English');
+  });
+  
+  test('allows updating descriptionLanguage with setDescriptionLanguage', () => {
+    render(
+      <GameProvider>
+        <TestContextHook />
+      </GameProvider>
+    );
+    
+    // Initial language should be English
+    expect(screen.getByTestId('hook-language').textContent).toBe('English');
+    
+    // Click button to change language to French
+    fireEvent.click(screen.getByTestId('hook-set-language'));
+    
+    // Language should now be French
+    expect(screen.getByTestId('hook-language').textContent).toBe('French');
+  });
+  
+  test('throws error when hook is used outside provider', () => {
+    // Silence console.error for this test
+    const originalError = console.error;
+    console.error = jest.fn();
+    
+    expect(() => {
+      render(<TestContextHook />);
+    }).toThrow('useGameContext must be used within a GameProvider');
+    
+    // Restore console.error
+    console.error = originalError;
   });
 }); 
