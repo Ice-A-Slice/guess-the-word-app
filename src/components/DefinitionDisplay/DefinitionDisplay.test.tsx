@@ -65,4 +65,60 @@ describe('DefinitionDisplay Component', () => {
     const difficulty = screen.getByText('Medium');
     expect(difficulty).toHaveAttribute('aria-labelledby', 'difficulty-label');
   });
+
+  // New tests for description functionality
+  test('renders AI description when provided', () => {
+    render(
+      <DefinitionDisplay 
+        definition="Test definition" 
+        difficulty="medium" 
+        description="AI generated description" 
+      />
+    );
+    expect(screen.getByText(/AI generated description/i)).toBeInTheDocument();
+    expect(screen.getByText(/AI Description/i)).toBeInTheDocument();
+  });
+
+  test('does not render AI description section when not provided', () => {
+    render(<DefinitionDisplay definition="Test definition" difficulty="medium" />);
+    expect(screen.queryByText(/AI Description/i)).not.toBeInTheDocument();
+  });
+
+  test('shows loading spinner when isDescriptionLoading is true', () => {
+    render(
+      <DefinitionDisplay 
+        definition="Test definition" 
+        difficulty="medium" 
+        isDescriptionLoading={true} 
+      />
+    );
+    expect(screen.getByText(/AI Description/i)).toBeInTheDocument();
+    // Check for the loading spinner container
+    const spinnerContainer = document.querySelector('.animate-spin');
+    expect(spinnerContainer).toBeInTheDocument();
+  });
+
+  test('shows English language indicator when descriptionLanguage is English', () => {
+    render(
+      <DefinitionDisplay 
+        definition="Test definition" 
+        difficulty="medium" 
+        description="AI description" 
+        descriptionLanguage="English" 
+      />
+    );
+    expect(screen.getByText(/English/i)).toBeInTheDocument();
+  });
+
+  test('shows Swedish language indicator when descriptionLanguage is Swedish', () => {
+    render(
+      <DefinitionDisplay 
+        definition="Test definition" 
+        difficulty="medium" 
+        description="AI beskrivning" 
+        descriptionLanguage="Swedish" 
+      />
+    );
+    expect(screen.getByText(/Svenska/i)).toBeInTheDocument();
+  });
 }); 
