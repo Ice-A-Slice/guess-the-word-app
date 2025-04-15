@@ -30,7 +30,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             onClick={() => setDescriptionLanguage(lang.code)}
             aria-pressed={descriptionLanguage === lang.code}
             aria-label={`Select ${lang.label} language`}
-            className={vertical ? 'w-full' : 'min-w-20'}
+            className={`${vertical ? 'w-full' : 'min-w-20'} ${descriptionLanguage === lang.code ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
           >
             {lang.label}
           </Button>
