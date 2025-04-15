@@ -1,263 +1,291 @@
+import openaiService from './openaiService';
 import { OpenAIServiceError, Language } from './openaiService.types';
 
-// Declare Jest mock types for our service functions
-type MockedFunction<T extends (...args: unknown[]) => unknown> = {
-  (...args: Parameters<T>): ReturnType<T>;
-  mockResolvedValueOnce: (value: Awaited<ReturnType<T>>) => void;
-  mockRejectedValueOnce: (reason: unknown) => void;
+// Define types for mocked responses
+interface MockResponse<T> {
+  ok: boolean;
+  status?: number;
+  json: jest.Mock<Promise<T>>;
+}
+
+// Mock the global fetch function
+global.fetch = jest.fn();
+
+// Helper function to setup successful mock responses
+const setupMockFetchSuccess = <T>(responseData: T): void => {
+  (global.fetch as jest.Mock).mockResolvedValueOnce({
+    ok: true,
+    json: jest.fn().mockResolvedValueOnce(responseData)
+  } as MockResponse<T>);
 };
 
-// First mock the service module
-jest.mock('./openaiService', () => {
-  // Create the mock service object inside the factory function
-  const mockService = {
-    generateWordDescription: jest.fn(),
-    generateHint: jest.fn(),
-    analyzeGuess: jest.fn(),
-    checkDefinitionMatch: jest.fn(),
-    generateSampleSentence: jest.fn(),
-    generateMultilingualWordDescription: jest.fn()
-  };
-  
-  return {
-    __esModule: true,
-    default: mockService,
-    OpenAIServiceError
-  };
+// Helper function to setup error mock responses
+const setupMockFetchError = (status = 500, errorMessage = 'Server error'): void => {
+  (global.fetch as jest.Mock).mockResolvedValueOnce({
+    ok: false,
+    status,
+    json: jest.fn().mockResolvedValueOnce({ error: errorMessage })
+  } as MockResponse<{ error: string }>);
+};
+
+// Access the private method type safely
+type OpenAIServiceWithPrivateMethods = typeof openaiService & {
+  _makeAPIRequest: (action: string, data: Record<string, unknown>) => Promise<unknown>;
+};
+
+// Reset mocks before each test
+beforeEach(() => {
+  jest.clearAllMocks();
 });
 
-// Then import the service
-import openaiService from './openaiService';
-
-// Get the mock functions from Jest
-const mockedGenerateWordDescription = openaiService.generateWordDescription as unknown as MockedFunction<typeof openaiService.generateWordDescription>;
-const mockedGenerateHint = openaiService.generateHint as unknown as MockedFunction<typeof openaiService.generateHint>;
-const mockedAnalyzeGuess = openaiService.analyzeGuess as unknown as MockedFunction<typeof openaiService.analyzeGuess>;
-const mockedCheckDefinitionMatch = openaiService.checkDefinitionMatch as unknown as MockedFunction<typeof openaiService.checkDefinitionMatch>;
-const mockedGenerateSampleSentence = openaiService.generateSampleSentence as unknown as MockedFunction<typeof openaiService.generateSampleSentence>;
-const mockedMultilingualWordDescription = openaiService.generateMultilingualWordDescription as unknown as MockedFunction<typeof openaiService.generateMultilingualWordDescription>;
-
 describe('openaiService', () => {
-  beforeEach(() => {
-    // Clear all mocks between tests
-    jest.clearAllMocks();
+  describe('_makeAPIRequest', () => {
+    test('makes a successful API request', async () => {
+      const mockData = { content: 'Test content' };
+      setupMockFetchSuccess(mockData);
+
+      // Access the private method with type assertion
+      const result = await (openaiService as OpenAIServiceWithPrivateMethods)._makeAPIRequest('testAction', { param: 'value' });
+      
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'testAction',
+          param: 'value',
+        }),
+      });
+      expect(result).toEqual(mockData);
+    });
+
+    test('handles API error responses', async () => {
+      setupMockFetchError(400, 'Bad request');
+
+      // Access the private method with type assertion
+      await expect((openaiService as OpenAIServiceWithPrivateMethods)._makeAPIRequest('testAction', {}))
+        .rejects
+        .toThrow(OpenAIServiceError);
+      
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('handles network errors', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+      // Access the private method with type assertion
+      await expect((openaiService as OpenAIServiceWithPrivateMethods)._makeAPIRequest('testAction', {}))
+        .rejects
+        .toThrow(OpenAIServiceError);
+    });
   });
 
   describe('generateWordDescription', () => {
-    test('returns the generated description when successful', async () => {
-      // Arrange
-      const mockDescription = 'A popular fruit that keeps doctors away, known for its crisp texture and sweet flavor.';
-      mockedGenerateWordDescription.mockResolvedValueOnce(mockDescription);
+    test('returns content from a successful API call', async () => {
+      const mockContent = 'A description of the test word';
+      setupMockFetchSuccess({ content: mockContent });
 
-      // Act
-      const result = await openaiService.generateWordDescription('apple');
-
-      // Assert
-      expect(result).toBe(mockDescription);
-      expect(openaiService.generateWordDescription).toHaveBeenCalledWith('apple');
+      const result = await openaiService.generateWordDescription('test');
+      
+      expect(result).toBe(mockContent);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generateWordDescription',
+          word: 'test',
+        }),
+      });
     });
 
-    test('returns fallback text when API throws an error', async () => {
-      // Arrange
-      const fallbackText = 'A common word in the English language.';
-      mockedGenerateWordDescription.mockResolvedValueOnce(fallbackText);
+    test('returns fallback message when API call fails', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      // Act
-      const result = await openaiService.generateWordDescription('apple');
-
-      // Assert
-      expect(result).toBe(fallbackText);
+      const result = await openaiService.generateWordDescription('test');
+      
+      expect(result).toBe('A common word in the English language.');
     });
   });
 
   describe('generateHint', () => {
-    test('returns the generated hint when successful', async () => {
-      // Arrange
-      const mockHint = 'This fruit is round and often red or green.';
-      mockedGenerateHint.mockResolvedValueOnce(mockHint);
+    test('returns hint from a successful API call with previous guesses', async () => {
+      const mockContent = 'This is a hint';
+      setupMockFetchSuccess({ content: mockContent });
 
-      // Act
-      const result = await openaiService.generateHint('apple', ['banana', 'orange']);
-
-      // Assert
-      expect(result).toBe(mockHint);
-      expect(openaiService.generateHint).toHaveBeenCalledWith('apple', ['banana', 'orange']);
+      const result = await openaiService.generateHint('word', ['guess1', 'guess2']);
+      
+      expect(result).toBe(mockContent);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generateHint',
+          word: 'word',
+          previousGuesses: ['guess1', 'guess2'],
+        }),
+      });
     });
 
-    test('includes previous guesses in the prompt', async () => {
-      // Arrange
-      mockedGenerateHint.mockResolvedValueOnce('A hint');
+    test('handles empty previous guesses array', async () => {
+      const mockContent = 'This is a hint';
+      setupMockFetchSuccess({ content: mockContent });
 
-      // Act
-      await openaiService.generateHint('apple', ['banana', 'orange']);
-
-      // Assert
-      expect(openaiService.generateHint).toHaveBeenCalledWith('apple', ['banana', 'orange']);
+      const result = await openaiService.generateHint('word');
+      
+      expect(result).toBe(mockContent);
+      expect(global.fetch).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+        body: JSON.stringify({
+          action: 'generateHint',
+          word: 'word',
+          previousGuesses: [],
+        }),
+      }));
     });
 
-    test('returns fallback text when API throws an error', async () => {
-      // Arrange
-      const fallbackText = 'This word has 5 letters.';
-      mockedGenerateHint.mockResolvedValueOnce(fallbackText);
+    test('returns fallback message when API call fails', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      // Act
-      const result = await openaiService.generateHint('apple');
-
-      // Assert
-      expect(result).toBe(fallbackText);
+      const result = await openaiService.generateHint('word');
+      
+      expect(result).toBe('This word has 4 letters.');
     });
   });
 
   describe('analyzeGuess', () => {
-    test('returns feedback on a guess when successful', async () => {
-      // Arrange
-      const mockFeedback = 'You are close! Your guess is a similar fruit.';
-      mockedAnalyzeGuess.mockResolvedValueOnce(mockFeedback);
+    test('returns analysis from a successful API call', async () => {
+      const mockContent = 'Your guess is close!';
+      setupMockFetchSuccess({ content: mockContent });
 
-      // Act
-      const result = await openaiService.analyzeGuess('apple', 'orange');
-
-      // Assert
-      expect(result).toBe(mockFeedback);
-      expect(openaiService.analyzeGuess).toHaveBeenCalledWith('apple', 'orange');
+      const result = await openaiService.analyzeGuess('correct', 'guess');
+      
+      expect(result).toBe(mockContent);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'analyzeGuess',
+          word: 'correct',
+          playerGuess: 'guess',
+        }),
+      });
     });
 
-    test('returns fallback text when API throws an error', async () => {
-      // Arrange
-      const fallbackText = 'Not correct. Try a different word.';
-      mockedAnalyzeGuess.mockResolvedValueOnce(fallbackText);
+    test('returns fallback message when API call fails', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      // Act
-      const result = await openaiService.analyzeGuess('apple', 'orange');
-
-      // Assert
-      expect(result).toBe(fallbackText);
+      const result = await openaiService.analyzeGuess('correct', 'guess');
+      
+      expect(result).toBe('Not correct. Try a different word.');
     });
   });
 
   describe('checkDefinitionMatch', () => {
-    test('returns true when the definition matches', async () => {
-      // Arrange
-      mockedCheckDefinitionMatch.mockResolvedValueOnce(true);
+    test('returns match result from a successful API call', async () => {
+      setupMockFetchSuccess({ match: true });
 
-      // Act
-      const result = await openaiService.checkDefinitionMatch(
-        'apple', 
-        'A round fruit with red or green skin and a white interior'
-      );
-
-      // Assert
+      const result = await openaiService.checkDefinitionMatch('word', 'definition');
+      
       expect(result).toBe(true);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'checkDefinitionMatch',
+          word: 'word',
+          definition: 'definition',
+        }),
+      });
     });
 
-    test('returns false when the definition does not match', async () => {
-      // Arrange
-      mockedCheckDefinitionMatch.mockResolvedValueOnce(false);
+    test('throws error when API call fails', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      // Act
-      const result = await openaiService.checkDefinitionMatch(
-        'apple', 
-        'A yellow curved fruit that monkeys like to eat'
-      );
-
-      // Assert
-      expect(result).toBe(false);
-    });
-
-    test('throws OpenAIServiceError when API throws an error', async () => {
-      // Arrange
-      mockedCheckDefinitionMatch.mockRejectedValueOnce(new OpenAIServiceError('API error'));
-
-      // Act & Assert
-      await expect(openaiService.checkDefinitionMatch('apple', 'A definition'))
+      await expect(openaiService.checkDefinitionMatch('word', 'definition'))
         .rejects
         .toThrow(OpenAIServiceError);
     });
   });
 
   describe('generateSampleSentence', () => {
-    test('returns the generated sample sentence when successful', async () => {
-      // Arrange
+    test('returns content and token usage from a successful API call', async () => {
       const mockResponse = {
-        content: 'She ate an apple for lunch every day.',
+        content: 'This is a sample sentence.',
         tokenUsage: {
-          prompt: 50,
-          completion: 30,
-          total: 80
+          prompt: 10,
+          completion: 5,
+          total: 15
         }
       };
-      mockedGenerateSampleSentence.mockResolvedValueOnce(mockResponse);
+      setupMockFetchSuccess(mockResponse);
 
-      // Act
-      const result = await openaiService.generateSampleSentence('apple');
-
-      // Assert
+      const result = await openaiService.generateSampleSentence('word');
+      
       expect(result).toEqual(mockResponse);
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generateSampleSentence',
+          word: 'word',
+        }),
+      });
     });
 
-    test('throws OpenAIServiceError when API throws an error', async () => {
-      // Arrange
-      mockedGenerateSampleSentence.mockRejectedValueOnce(new OpenAIServiceError('API error'));
+    test('throws error when API call fails', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      // Act & Assert
-      await expect(openaiService.generateSampleSentence('apple'))
+      await expect(openaiService.generateSampleSentence('word'))
         .rejects
         .toThrow(OpenAIServiceError);
-    });
-
-    test('includes token usage when available', async () => {
-      // Arrange
-      const mockResponse = {
-        content: 'Example sentence',
-        tokenUsage: {
-          prompt: 40,
-          completion: 20,
-          total: 60
-        }
-      };
-      mockedGenerateSampleSentence.mockResolvedValueOnce(mockResponse);
-
-      // Act
-      const result = await openaiService.generateSampleSentence('word');
-
-      // Assert
-      expect(result.tokenUsage).toEqual({
-        prompt: 40,
-        completion: 20,
-        total: 60
-      });
     });
   });
 
   describe('generateMultilingualWordDescription', () => {
-    test('returns the generated multilingual description when successful', async () => {
-      // Arrange
+    test('returns content and token usage from a successful API call', async () => {
       const mockResponse = {
-        content: 'En populär frukt som håller läkare borta, känd för sin krispiga textur och söta smak.',
-        language: 'sv'
+        content: 'Esta es una descripción en español.',
+        tokenUsage: {
+          prompt: 15,
+          completion: 10,
+          total: 25
+        }
       };
-      mockedMultilingualWordDescription.mockResolvedValueOnce(mockResponse);
+      setupMockFetchSuccess(mockResponse);
 
-      // Act
-      const result = await openaiService.generateMultilingualWordDescription('apple', 'sv' as Language);
-
-      // Assert
+      const result = await openaiService.generateMultilingualWordDescription('word', 'sv' as Language);
+      
       expect(result).toEqual(mockResponse);
-      expect(openaiService.generateMultilingualWordDescription).toHaveBeenCalledWith('apple', 'sv');
+      expect(global.fetch).toHaveBeenCalledWith('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generateMultilingualWordDescription',
+          word: 'word',
+          language: 'sv',
+        }),
+      });
     });
 
-    test('returns fallback message when API throws an error', async () => {
-      // Arrange
-      const fallbackResponse = { 
-        content: 'Failed to generate a description in Swedish. Please try again.' 
-      };
-      mockedMultilingualWordDescription.mockResolvedValueOnce(fallbackResponse);
+    test('returns fallback message when API call fails', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API error'));
 
-      // Act
-      const result = await openaiService.generateMultilingualWordDescription('apple', 'sv' as Language);
-
-      // Assert
-      expect(result).toEqual(fallbackResponse);
+      const result = await openaiService.generateMultilingualWordDescription('word', 'sv' as Language);
+      
+      expect(result).toHaveProperty('content');
+      expect(result.content).toContain('Failed to generate a description in Swedish');
     });
   });
 }); 

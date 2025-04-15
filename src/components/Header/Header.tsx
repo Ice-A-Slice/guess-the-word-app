@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Settings } from '@/components/Settings';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 interface HeaderProps {
   title: string;
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ title, score }) => {
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         <h1 className="text-2xl font-bold truncate mr-2" id="game-title">{title}</h1>
         <div className="flex items-center space-x-2 sm:space-x-4">
+          <LanguageSelector className="hidden sm:flex mr-2" />
           {score !== undefined && (
             <div 
               className="bg-white text-blue-600 px-3 py-1 sm:px-4 sm:py-2 rounded-full font-bold text-sm sm:text-base"

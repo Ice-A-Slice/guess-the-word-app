@@ -11,6 +11,7 @@ export type { MessageType } from './FeedbackMessage/FeedbackMessage';
 export { Header } from './Header/Header';
 export { default as SessionSummary } from './SessionSummary';
 export { Settings } from './Settings';
+export { LanguageSelector } from './LanguageSelector';
 
 // Export future components here
 // Example: export { Button } from './Button/Button';

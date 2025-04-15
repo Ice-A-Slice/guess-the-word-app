@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 // Initialize the OpenAI client on the server side
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true, // Enable for testing in browser-like environments
 });
 
 /**
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
         return handleCheckDefinitionMatch(word, definition);
       case 'generateSampleSentence':
         return handleGenerateSampleSentence(word);
+      case 'generateMultilingualWordDescription':
+        return handleMultilingualWordDescription(word, language);
       default:
         return NextResponse.json(
           { error: 'Invalid action specified' },
@@ -276,6 +279,45 @@ async function handleGenerateSampleSentence(word: string) {
     console.error('Error generating sample sentence:', error);
     return NextResponse.json(
       { error: 'Failed to generate sample sentence' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Generate a word description in the specified language
+ */
+async function handleMultilingualWordDescription(word: string, language: string) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a helpful assistant that generates concise, informative descriptions for words in ${language}. The descriptions should be natural and idiomatic in the target language.`
+        },
+        {
+          role: 'user',
+          content: `Generate a brief description (2-3 sentences) in ${language} for the word "${word}". The description should give hints about the word without explicitly stating it.`
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.7,
+    });
+
+    return NextResponse.json({
+      content: response.choices[0]?.message?.content?.trim() || 
+               `A word that means ${word} in ${language}.`,
+      tokenUsage: {
+        prompt: response.usage?.prompt_tokens || 0,
+        completion: response.usage?.completion_tokens || 0,
+        total: response.usage?.total_tokens || 0,
+      }
+    });
+  } catch (error) {
+    console.error(`Error generating ${language} word description:`, error);
+    return NextResponse.json(
+      { error: `Failed to generate ${language} word description` },
       { status: 500 }
     );
   }

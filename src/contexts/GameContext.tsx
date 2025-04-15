@@ -219,11 +219,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         difficulty: action.payload,
       };
       
-    case 'SET_DESCRIPTION_LANGUAGE':
-      return {
+    case 'SET_DESCRIPTION_LANGUAGE': {
+      const newState = {
         ...state,
         descriptionLanguage: action.payload,
       };
+      
+      // Save state to localStorage when language changes
+      saveGameState(newState);
+      
+      return newState;
+    }
       
     case 'SET_MAX_SKIPS':
       return {

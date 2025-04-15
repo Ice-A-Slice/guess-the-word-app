@@ -1,6 +1,6 @@
 # Task ID: 3
 # Title: Create Language Selection UI Component
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Design and implement a UI element allowing users to select between English and Swedish for word descriptions.
@@ -9,3 +9,44 @@ Create a dropdown menu or toggle buttons for language selection. Initially suppo
 
 # Test Strategy:
 Verify UI renders correctly across different screen sizes. Test keyboard navigation and screen reader compatibility. Ensure state updates correctly when language is changed. Create unit tests for the component's rendering and state management.
+
+# Subtasks:
+## 1. Create Language Selection UI Elements [done]
+### Dependencies: None
+### Description: Design and implement the visual elements for language selection between English and Swedish
+### Details:
+1. Create a container component for the language selector
+2. Implement either a dropdown menu or toggle buttons with English and Swedish options
+3. Add appropriate icons or flags next to language names for better visual recognition
+4. Style the component to match the existing game UI (colors, fonts, borders)
+5. Add proper ARIA attributes and keyboard navigation for accessibility
+6. Include clear labeling (e.g., 'Language' or 'Select Language')
+7. Test the visual appearance across different screen sizes
+8. Ensure the component has hover/focus states for better user experience
+
+## 2. Implement Language Selection State Management [done]
+### Dependencies: 3.1
+### Description: Create the state management logic to track and update the selected language
+### Details:
+1. Define a state variable to store the currently selected language (default to English)
+2. Create a context or state management solution to make the language selection available throughout the app
+3. Implement a language selection handler function that updates the state when user changes language
+4. Connect the UI elements from subtask 1 to the state management logic
+5. Add persistence for language preference using localStorage or similar mechanism
+6. Create a hook or utility function to easily access the current language from any component
+7. Test that language selection state updates correctly when user interacts with UI
+8. Ensure the selected language state is preserved across page refreshes
+
+## 3. Position and Integrate Language Selector in Game Interface [done]
+### Dependencies: 3.1, 3.2
+### Description: Position the language selector appropriately within the game UI and connect it to the word description functionality
+### Details:
+1. Determine the optimal position for the language selector (e.g., header, settings menu, or game screen corner)
+2. Integrate the language selector component into the main game layout
+3. Ensure the language selector doesn't interfere with other game elements
+4. Connect the language state to the word description display logic
+5. Implement a mechanism to fetch/display word descriptions in the selected language
+6. Add smooth transitions when switching between languages
+7. Test the complete integration by changing languages and verifying word descriptions update accordingly
+8. Verify the UI works correctly on different devices and screen orientations
+

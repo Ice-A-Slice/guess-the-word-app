@@ -21,14 +21,14 @@ export interface AIResponse {
 }
 
 /**
- * Supported languages for word descriptions
+ * Supported languages for descriptions
  */
 export type Language = 'en' | 'sv';
 
 /**
- * Language names mapping
+ * Human-readable language names
  */
 export const LANGUAGE_NAMES: Record<Language, string> = {
-  'en': 'English',
-  'sv': 'Swedish'
+  en: 'English',
+  sv: 'Swedish'
 };
