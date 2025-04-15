@@ -1,4 +1,6 @@
-import { AIResponse, OpenAIServiceError } from './openaiService.types';
+import { AIResponse, OpenAIServiceError, Language, LANGUAGE_NAMES } from './openaiService.types';
+
+// OpenAI client declaration is not needed here since we're using API routes
 
 /**
  * Custom error class for OpenAI service errors
@@ -139,6 +141,24 @@ const openaiService = {
           ? `Failed to generate sample: ${error.message}` 
           : 'Failed to generate sample'
       );
+    }
+  },
+
+  /**
+   * Generate a multilingual description for a word
+   * @param word The word to generate a description for
+   * @param language The target language for the description
+   * @returns A description of the word in the specified language
+   */
+  generateMultilingualWordDescription: async (word: string, language: Language): Promise<AIResponse> => {
+    try {
+      return await openaiService._makeAPIRequest('generateMultilingualWordDescription', {
+        word,
+        language,
+      });
+    } catch (error) {
+      console.error('Error generating multilingual word description:', error);
+      return { content: `Failed to generate a description in ${LANGUAGE_NAMES[language]}. Please try again.` };
     }
   }
 };

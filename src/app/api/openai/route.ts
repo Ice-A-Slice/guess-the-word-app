@@ -11,12 +11,14 @@ const openai = new OpenAI({
  */
 export async function POST(request: NextRequest) {
   try {
-    const { action, word, previousGuesses, playerGuess, definition } = await request.json();
+    const { action, word, previousGuesses, playerGuess, definition, language } = await request.json();
     
     // Different handlers based on the requested action
     switch (action) {
       case 'generateWordDescription':
         return handleGenerateWordDescription(word);
+      case 'generateMultilingualWordDescription':
+        return handleMultilingualWordDescription(word, language);
       case 'generateHint':
         return handleGenerateHint(word, previousGuesses);
       case 'analyzeGuess':
@@ -69,6 +71,41 @@ async function handleGenerateWordDescription(word: string) {
     console.error('Error generating word description:', error);
     return NextResponse.json(
       { error: 'Failed to generate word description' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Generate a multilingual description for a word
+ */
+async function handleMultilingualWordDescription(word: string, language: string = 'English') {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a helpful assistant that generates concise, informative, and engaging descriptions for words in a word-guessing game. You always respond in ${language}.`
+        },
+        {
+          role: 'user',
+          content: `Generate a brief description (2-3 sentences) for the word "${word}" that could be used in a word-guessing game. The description should give hints about the word without explicitly stating it. Respond in ${language}.`
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.7,
+    });
+
+    return NextResponse.json({
+      content: response.choices[0]?.message?.content?.trim() || 
+               `A word that refers to ${word}.`,
+      language: language
+    });
+  } catch (error) {
+    console.error('Error generating multilingual word description:', error);
+    return NextResponse.json(
+      { error: 'Failed to generate multilingual word description' },
       { status: 500 }
     );
   }
