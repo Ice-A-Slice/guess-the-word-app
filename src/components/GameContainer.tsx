@@ -6,6 +6,7 @@ import ScoreAnimation from './ScoreAnimation';
 import { FeedbackMessage } from './FeedbackMessage';
 import { DefinitionDisplay } from './DefinitionDisplay/DefinitionDisplay';
 import SessionSummary from './SessionSummary';
+import { LanguageSelector } from './LanguageSelector';
 
 const GameContainer: React.FC = () => {
   const game = useGameWithWordSelection();
@@ -135,6 +136,11 @@ const GameContainer: React.FC = () => {
           </div>
         )}
         
+        {/* Language Selector */}
+        <div className="w-full mb-4 flex justify-end">
+          <LanguageSelector />
+        </div>
+        
         {/* Definition Display - only shown in active state */}
         {game.status === 'active' && (
           <div className={`transition-all duration-300 ${wordTransition ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
@@ -142,6 +148,9 @@ const GameContainer: React.FC = () => {
               definition={game.currentWord.definition}
               difficulty={game.currentWord.difficulty}
               animate={!wordTransition}
+              description={game.currentDescription ?? undefined}
+              isDescriptionLoading={game.isDescriptionLoading}
+              descriptionLanguage={game.descriptionLanguage}
             />
           </div>
         )}

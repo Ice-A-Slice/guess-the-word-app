@@ -4,12 +4,18 @@ interface DefinitionDisplayProps {
   definition: string;
   difficulty: 'easy' | 'medium' | 'hard';
   animate?: boolean;
+  description?: string;  // OpenAI generated description
+  isDescriptionLoading?: boolean;  // Loading state for description
+  descriptionLanguage?: string;  // Current language
 }
 
 export const DefinitionDisplay: React.FC<DefinitionDisplayProps> = ({ 
   definition, 
   difficulty,
-  animate = false
+  animate = false,
+  description,
+  isDescriptionLoading = false,
+  descriptionLanguage = 'English'
 }) => {
   // Colors based on difficulty
   const difficultyColor = 
@@ -27,6 +33,10 @@ export const DefinitionDisplay: React.FC<DefinitionDisplayProps> = ({
   
   // Animation class based on prop
   const animationClass = animate ? 'animate-scale-in' : '';
+
+  // Language flag emoji
+  const languageFlag = descriptionLanguage === 'English' ? '🇬🇧' : '🇸🇪';
+  const languageLabel = descriptionLanguage === 'English' ? 'English' : 'Svenska';
 
   return (
     <section 
@@ -49,6 +59,37 @@ export const DefinitionDisplay: React.FC<DefinitionDisplayProps> = ({
         >
           &ldquo;{definition}&rdquo;
         </div>
+
+        {/* AI-Generated Description Section */}
+        {(description || isDescriptionLoading) && (
+          <div className="mt-6">
+            <h3 className="text-xl font-semibold mb-3 text-gray-800 flex items-center justify-center">
+              <span className="mr-2">🤖</span>
+              <span>AI Description</span>
+              <span className="ml-2 text-sm flex items-center">
+                <span className="mr-1">{languageFlag}</span>
+                <span className="text-gray-600">({languageLabel})</span>
+              </span>
+            </h3>
+            
+            <div
+              className="text-gray-700 text-lg mb-4 max-w-3xl mx-auto p-5 bg-blue-50 rounded-lg border border-blue-200 shadow-inner relative min-h-[80px]"
+              role="region"
+              aria-live="polite"
+            >
+              {isDescriptionLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : description ? (
+                <p>&ldquo;{description}&rdquo;</p>
+              ) : (
+                <p className="text-gray-500 italic">No description available</p>
+              )}
+            </div>
+          </div>
+        )}
+
         <div 
           className={`mt-2 px-3 py-1 rounded-md inline-flex items-center ${difficultyColor}`}
           aria-live="polite"

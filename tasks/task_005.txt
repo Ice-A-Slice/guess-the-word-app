@@ -1,6 +1,6 @@
 # Task ID: 5
 # Title: Integrate Description Generation with Game Logic
-# Status: pending
+# Status: done
 # Dependencies: 1, 2, 4
 # Priority: high
 # Description: Connect the OpenAI API service with the core game logic to generate descriptions for the selected words.
@@ -11,7 +11,7 @@ Modify the game's word selection logic to fetch a description from the OpenAI AP
 Create integration tests that verify the full flow from word selection to description display. Mock API responses to test various scenarios. Verify descriptions update when language is changed. Test error handling during description generation.
 
 # Subtasks:
-## 1. Implement OpenAI API Integration in Game Service [pending]
+## 1. Implement OpenAI API Integration in Game Service [done]
 ### Dependencies: None
 ### Description: Create a service method that calls the OpenAI API to generate descriptions for selected words based on the current language setting
 ### Details:
@@ -22,7 +22,7 @@ Create integration tests that verify the full flow from word selection to descri
 5. Test the integration with sample words in different languages
 6. Document the API usage patterns and rate limits
 
-## 2. Implement Description Caching Mechanism [pending]
+## 2. Implement Description Caching Mechanism [done]
 ### Dependencies: 5.1
 ### Description: Create a caching system to store generated descriptions and avoid redundant API calls during gameplay
 ### Details:
@@ -34,7 +34,7 @@ Create integration tests that verify the full flow from word selection to descri
 6. Test cache behavior with mock API responses
 7. Ensure thread safety if the game supports concurrent sessions
 
-## 3. Connect Description Generation to Game Flow [pending]
+## 3. Connect Description Generation to Game Flow [done]
 ### Dependencies: 5.1, 5.2
 ### Description: Integrate the description generation and caching into the core game logic to update game state with descriptions
 ### Details:
